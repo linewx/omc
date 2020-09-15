@@ -28,3 +28,4 @@ ACTION LIST
         jmxterm = pkg_resources.resource_filename(__name__, '../../lib/jmxterm-1.0.2-uber.jar')
         cmd = 'echo jvms | java -jar %s -n' % jmxterm
         self.run_cmd(cmd)
+
