@@ -17,7 +17,7 @@ def cmd(path):
     resource_type = argv[0]
     print('########################## resource type:' + resource_type)
     try:
-        mod = __import__(".".join(['zz', resource_type, resource_type]), fromlist=[resource_type.capitalize()])
+        mod = __import__(".".join(['omt', 'resources', resource_type, resource_type]), fromlist=[resource_type.capitalize()])
         clazz = getattr(mod, resource_type.capitalize())
         context = {
             'all': ['web', *argv],
