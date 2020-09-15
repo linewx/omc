@@ -1,0 +1,8 @@
+.idea/
+**/__pycache__/**
+**/*.pyc
+.vscode/
+**/.DS_store
+zz/lib/msxw/result_cache/
+zz/lib/msxw/company_info/
+zz/lib/msxw/company_info.zip

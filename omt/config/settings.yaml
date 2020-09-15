@@ -1,0 +1,6 @@
+default:
+  omt_home: ~/.omt/
+  DB:
+    drivername: sqlite
+    database: "@format {env[OMT_HOME]}/omt.db"
+  
