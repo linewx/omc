@@ -2575,9 +2575,26 @@ __docker_commands() {
 
 __omt_commands() {
     local -a subcmds
-    #subcmds=("$(_call_program commands omt resources 2>&1)")
+    # echo 'hello'
+    # #subcmds=("$(_call_program commands omt resources 2>&1)")
+    # #echo $words[0,$current]
+    # echo "words: ---  "
+    #echo 'start'
+    # echo $words[$]
+     # echo $words[1,$CURRENT-1]
+    #echo "######"
+    #echo $words
+    #echo 'test'
+    current_value=${(j: :)words[1, $CURRENT-1]}
+    #echo 'edntest'
+    # echo "${words}[1,$CURRENT-1]"
+    # current_value=${(j: :)($words[1, $CURRENT-1])}
+    #echo "##########"
+    #echo 'end'
+    # echo 'end words'
     subcmds=(${(f)"$(_call_program commands omt resources 2>&1)"})
     _describe 'command' subcmds
+    # _describe 'command' ('c:c desired')
 }
 
 
@@ -3009,7 +3026,18 @@ _omt() {
             ;;
         (option-or-argument)
             curcontext=${curcontext%:*:*}:docker-$words[1]:
-            __docker_subcommand && ret=0
+            # echo $curcontext
+            # echo 'var'
+            # echo 'current'$CURRENT
+            # echo 'IPREFIX'$IPREFIX
+            # echo 'ISUFFIX'$ISUFFIX
+            # echo 'PREFIX'$PREFIX
+            # echo 'QIPREFIX'$QIPREFIX
+            # echo 'QISUFFIX'$QISUFFIX
+            # echo 'SUFFIX'$SUFFIX
+            #echo 'compstate'$compstate
+            # echo 'endvar'
+            __omt_commands && ret=0
             ;;
     esac
 
