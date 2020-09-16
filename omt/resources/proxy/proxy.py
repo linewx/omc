@@ -1,5 +1,5 @@
 from omt.core.resource import Resource
-from omt.db import model,engine
+#from omt import model,engine
 from sqlalchemy.orm import sessionmaker
 import subprocess
 

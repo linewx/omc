@@ -16,6 +16,9 @@ ACTION LIST
     env - environment command
     edit - edit the doc
     """
+    def description(self):
+        return 'view documents'
+
 
     def _run(self):
         self.view()

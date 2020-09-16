@@ -17,6 +17,8 @@ SYNOPSIS
 ACTION LIST
 
     """
+    def description(self):
+        return 'jmx tools'
 
     def _run(self):
 

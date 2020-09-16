@@ -100,6 +100,9 @@ class Resource:
                         traceback.print_exc()
                         self.logger.error('can not parse the command')
 
+    def description(self):
+        return self._get_resource_name()
+
     def help(self):
         raw_command = self.context['all']
         index = self.context['index']
