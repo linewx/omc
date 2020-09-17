@@ -101,7 +101,22 @@ class Resource:
                         self.logger.error('can not parse the command')
 
     def description(self):
+        """this is the description for resources"""
         return self._get_resource_name()
+
+    def completion(self):
+        # list candidates for completions in zsh style (a:"description for a" b:"description for b")
+        # print(dir(self))
+        public_methods = self._get_public_methods()
+        description = [(one, getattr(self, one).__doc__) for one in public_methods]
+        for one_desc in description:
+            print(one_desc[0] + ':' + one_desc[0] if one_desc[1] is None else one_desc[1])
+        return description
+
+    def _get_public_methods(self):
+        return list(filter(lambda x:callable(getattr(self, x)) and not x.startswith('_'), dir(self)))
+
+
 
     def help(self):
         raw_command = self.context['all']

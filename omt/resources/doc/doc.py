@@ -5,18 +5,8 @@ from omt.core import Resource
 
 
 class Doc(Resource):
-    """
-NAME
-    doc - doc command
-
-SYNOPSIS
-    project [RESOURCE] action [OPTION]
-
-ACTION LIST
-    env - environment command
-    edit - edit the doc
-    """
     def description(self):
+        'description for doc'
         return 'view documents'
 
 
@@ -24,10 +14,7 @@ ACTION LIST
         self.view()
 
     def view(self):
-        '''
-        this is the test doc
-        :return:
-        '''
+        ''''''
         if 'doc' in self.context:
             resource_name = self.context['doc']
             fname = os.path.join(zz.home, 'notes', resource_name + '.txt')
