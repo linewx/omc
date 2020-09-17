@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
+
+import pkg_resources
+
 import omt
 import logging
 import copy
@@ -106,17 +109,33 @@ class Resource:
 
     def completion(self):
         # list candidates for completions in zsh style (a:"description for a" b:"description for b")
-        # print(dir(self))
+
+        # public methods
         public_methods = self._get_public_methods()
         description = [(one, getattr(self, one).__doc__) for one in public_methods]
         for one_desc in description:
             print(one_desc[0] + ':' + one_desc[0] if one_desc[1] is None else one_desc[1])
+
+        # available modules
+        print(__name__)
+        # pkg_resources.resource_listdir('omt')
+        self._get_submodules()
         return description
 
     def _get_public_methods(self):
-        return list(filter(lambda x:callable(getattr(self, x)) and not x.startswith('_'), dir(self)))
+        return list(filter(lambda x: callable(getattr(self, x)) and not x.startswith('_'), dir(self)))
 
-
+    def _get_submodules(self):
+        # for example, module name is 'omt.resources.jmx.jmx', submodules should be other folder within omt.resources.jmx folder
+        module_path = self.__module__.split('.')
+        module_path.pop()
+        current_module = module_path.pop()
+        all_resources = (pkg_resources.resource_listdir('.'.join(module_path), current_module))
+        filterd_modules = [one for one in all_resources if
+                           pkg_resources.resource_isdir('.'.join(module_path) + '.' + current_module,
+                                                        one) is True and one not in ['__pycache__']]
+        print(filterd_modules)
+        return
 
     def help(self):
         raw_command = self.context['all']
