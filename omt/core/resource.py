@@ -109,18 +109,20 @@ class Resource:
 
     def completion(self):
         # list candidates for completions in zsh style (a:"description for a" b:"description for b")
+        if not self._get_resource_value():
+            self._list_resources()
+        else:
+            # public methods
+            public_methods = self._get_public_methods()
+            description = [(one, getattr(self, one).__doc__) for one in public_methods]
+            for one_desc in description:
+                print(one_desc[0] + ':' + one_desc[0] if one_desc[1] is None else one_desc[1])
 
-        # public methods
-        public_methods = self._get_public_methods()
-        description = [(one, getattr(self, one).__doc__) for one in public_methods]
-        for one_desc in description:
-            print(one_desc[0] + ':' + one_desc[0] if one_desc[1] is None else one_desc[1])
-
-        # available modules
-        print(__name__)
-        # pkg_resources.resource_listdir('omt')
-        self._get_submodules()
-        return description
+            # available modules
+            print(__name__)
+            # pkg_resources.resource_listdir('omt')
+            self._get_submodules()
+            return description
 
     def _get_public_methods(self):
         return list(filter(lambda x: callable(getattr(self, x)) and not x.startswith('_'), dir(self)))
@@ -136,6 +138,10 @@ class Resource:
                                                         one) is True and one not in ['__pycache__']]
         print(filterd_modules)
         return
+
+    def _list_resources(self):
+        pass
+
 
     def help(self):
         raw_command = self.context['all']

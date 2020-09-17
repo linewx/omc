@@ -31,3 +31,16 @@ ACTION LIST
         cmd = 'echo jvms | java -jar %s -n' % jmxterm
         self.run_cmd(cmd)
 
+
+    def _list_resources(self):
+        jmxterm = pkg_resources.resource_filename(__name__, '../../lib/jmxterm-1.0.2-uber.jar')
+        cmd = 'echo jvms | java -jar %s -n' % jmxterm
+        result = self.run_cmd(cmd, capture_output=True, verbose=False)
+        output = result.stdout.decode("utf-8").splitlines()
+        jvms = [list(map(lambda x: str(x).strip(), str(one).split(" ", 1))) for one in output]
+        for one in jvms:
+            content = one[1] if len(one[1]) <= 100 else one[1][5:100]
+
+            print(str(one[0] + ":" + one[0] +' ' + content))
+
+
