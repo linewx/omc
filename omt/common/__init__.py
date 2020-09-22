@@ -20,8 +20,11 @@ class CmdTaskMixin:
             # ferr = open(os.path.join(settings.LOG_DIR, 'omt.err.log'), "w+")
 
             if block:
-                result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, stdout=fout, stderr=ferr,capture_output=capture_output,
-                                        env=the_env)
+                if not capture_output:
+                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, stdout=fout, stderr=ferr,env=env)
+                else:
+                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, capture_output=True,env=env)
+
                 return result
             else:
                 result = subprocess.Popen(cmd, cwd=cwd, shell=True, stdout=fout, stderr=ferr, env=the_env)
