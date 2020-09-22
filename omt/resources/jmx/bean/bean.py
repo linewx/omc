@@ -204,7 +204,7 @@ class Bean(Resource, CmdTaskMixin):
     def _parse_one_opeartion_line(self, ops):
         # %0   - void addServiced(java.lang.String name)
         try:
-            parsed_result = re.match(".*- (\w+)(.*)\((.*)\)", ops).groups()
+            parsed_result = re.match(".*- ([\w\.]+)(.*)\((.*)\)", ops).groups()
 
             result = {
                 'return': parsed_result[0].strip(),
