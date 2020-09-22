@@ -29,11 +29,23 @@ class Bean(Resource, CmdTaskMixin):
         self.run_cmd(cmd)
 
     def exec(self):
-        jmxterm = pkg_resources.resource_filename(__name__, '../../../lib/jmxterm-1.0.2-uber.jar')
-        jmx = self.context['jmx']
-        bean = self._get_resource_value()
-        cmd = 'echo "open %s && bean %s && info"  | java -jar %s -n' % (jmx, bean, jmxterm)
-        self.run_cmd(cmd)
+        if 'completion' in self._get_params():
+            jmx = self.context['jmx']
+            bean = self._get_resource_value()
+            bean = bean.replace(" ", "\\ ")
+            short_cmd = "open %s && bean %s && info" % (jmx, bean)
+            result = self.run_cmd(JmxTermUtils.build_command(short_cmd), capture_output=True, verbose=False)
+            output = result.stdout.decode('utf-8').splitlines()
+            for one_attr in (self._list_operation_resources(self._parse_info(output))):
+                print(one_attr['method'] + ":" + one_attr['raw_data'])
+        else:
+            attr_name = ' '.join(self._get_params())
+            jmx = self.context['jmx']
+            bean = self._get_resource_value()
+            bean = bean.replace(" ", "\\ ")
+            cmd = "open %s && bean %s && run %s" %  (jmx, bean, attr_name)
+            #cmd = 'echo "open %s && bean %s && set %s"  | java -jar %s -n' % (jmx, bean, attr_name, jmxterm)
+            self.run_cmd(JmxTermUtils.build_command(cmd))
 
     def get(self):
         if 'completion' in self._get_params():
@@ -165,7 +177,7 @@ class Bean(Resource, CmdTaskMixin):
     def _list_operation_resources(self, parsed_info):
         results = []
         for one_ops_line in parsed_info['ops']:
-            one_result = self._parse_one_attr_line(one_ops_line)
+            one_result = self._parse_one_opeartion_line(one_ops_line)
             results.append(one_result)
         return results
 
@@ -195,9 +207,9 @@ class Bean(Resource, CmdTaskMixin):
             parsed_result = re.match(".*- (\w+)(.*)\((.*)\)", ops).groups()
 
             result = {
-                'return': parsed_result[0],
-                'method': parsed_result[1],
-                'param': parsed_result[2],
+                'return': parsed_result[0].strip(),
+                'method': parsed_result[1].strip(),
+                'param': parsed_result[2].strip(),
                 'raw_data': ops
             }
             return result
