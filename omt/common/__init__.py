@@ -4,36 +4,27 @@ import os
 
 
 class CmdTaskMixin:
+
     def run_cmd(self, cmd, cwd=None, env=None, block=True, capture_output=False, verbose=True, *args, **kwargs):
-        # verbose = kwargs['verbose'] if 'verbose' in kwargs else None
-        fout = None
-        ferr = None
         the_env = env if not env else os.environ
         try:
-            # todo@rain: ugly solution, to use pathlib instead
             cwd = cwd if cwd is None else cwd.replace("\\", "/")
+
             if verbose:
                 print("cmd: %s, cwd: %s" % (cmd, cwd))
 
-            # if not verbose:
-            # fout = open(os.path.join(settings.LOG_DIR, 'omt.log'), "w+")
-            # ferr = open(os.path.join(settings.LOG_DIR, 'omt.err.log'), "w+")
-
             if block:
-                if not capture_output:
-                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, stdout=fout, stderr=ferr,env=env)
+                if capture_output:
+                    # capture output
+                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, env=the_env, capture_output=True)
+                    return result
                 else:
-                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, capture_output=True,env=env)
-
-                return result
+                    # to output
+                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, env=the_env, capture_output=False)
+                    return result
             else:
-                result = subprocess.Popen(cmd, cwd=cwd, shell=True, stdout=fout, stderr=ferr, env=the_env)
+                result = subprocess.Popen(cmd, cwd=cwd, shell=True, env=the_env)
                 return result
 
         except Exception as e:
             raise e
-        finally:
-            if fout is not None:
-                fout.close()
-            if ferr is not None:
-                ferr.close()
