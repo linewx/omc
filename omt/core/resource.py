@@ -23,7 +23,7 @@ class Resource:
             edit - edit the doc
     """
 
-    def __init__(self, context, type='web'):
+    def __init__(self, context={}, type='web'):
         self.context = context
         # set default resoure context
         self.context[self._get_resource_name()] = ''
