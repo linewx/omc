@@ -3,4 +3,6 @@ from omt.core import Resource
 
 class Exchange(Resource):
     def list(self):
-        print('exchange list')
+        client = self.context['common']['client']
+        for name in list(map(lambda x: x.get('name'), client.get_exchanges())):
+            print(name)

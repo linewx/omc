@@ -1,10 +1,31 @@
 from omt.core import Resource
 import pika
+import pyrabbit
+
+from omt.utils import UrlUtils
+from omt.utils.rabbitmq import RabbitmqManagement
 
 
 class Rmq(Resource):
     def _list_resources(self):
         pass
+
+    def _before_sub_resource(self):
+        url = self._get_resource_value()[0]
+        url_utils = UrlUtils(url)
+        url_without_identification = url_utils.get_hostname() + ":" + str(url_utils.get_port())
+        username = url_utils.get_username()
+        password = url_utils.get_password()
+
+        parsed = url_utils.parse()
+        self.context['common'] = {
+            'client': RabbitmqManagement({
+                'hostname': parsed.hostname,
+                'port': parsed.port,
+                'username': parsed.username,
+                'password': parsed.password
+            })
+        }
 
 
 def publish():

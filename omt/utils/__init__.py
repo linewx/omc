@@ -25,3 +25,15 @@ class UrlUtils:
                 self.parsed_result.username + ":" + self.parsed_result.password + "@", "")
         else:
             return self.parsed_result.geturl()
+
+    def get_username(self):
+        return self.parsed_result.username
+
+    def get_password(self):
+        return self.parsed_result.password
+
+    def get_hostname(self):
+        return self.parsed_result.hostname
+
+    def get_port(self):
+        return self.parsed_result.port

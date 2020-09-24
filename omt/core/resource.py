@@ -26,7 +26,7 @@ class Resource:
     def __init__(self, context={}, type='web'):
         self.context = context
         # set default resoure context
-        self.context[self._get_resource_name()] = ''
+        self.context[self._get_resource_name()] = []
         self.logger = logging.getLogger('.'.join([self.__module__, self.__class__.__name__]))
         self.has_params = None
         self.type = type
@@ -45,6 +45,12 @@ class Resource:
 
     def _run(self):
         raise Exception('no run action defined')
+
+    def _before_sub_resource(self):
+        pass
+
+    def _after_sub_resource(self):
+        pass
 
     def _format(self, result):
         if self.type == 'cmd':
@@ -87,13 +93,16 @@ class Resource:
                         mod_path = (str(self.__class__.__module__)).split('.')[:-1]
                         mod_path.extend([next_value, next_value])
                         mod = __import__('.'.join(mod_path), fromlist=[next_value.capitalize()])
+                        self._before_sub_resource()
                         context = copy.copy(self.context)
                         context['index'] = self.context['index'] + 1
                         context[resource_name] = self.context[resource_name]
                         if hasattr(mod, next_value.capitalize()):
                             clazz = getattr(mod, next_value.capitalize())
                             instance = clazz(context)
-                            return instance._execute()
+                            result = instance._execute()
+                            self._after_sub_resource()
+                            return result
                     except ModuleNotFoundError as inst:
                         self.logger.info(inst)
 
