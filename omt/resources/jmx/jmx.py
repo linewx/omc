@@ -17,11 +17,11 @@ SYNOPSIS
 ACTION LIST
 
     """
+
     def description(self):
         return 'jmx tools'
 
     def _run(self):
-
         jmxterm = pkg_resources.resource_filename(__name__, '../../lib/jmxterm-1.0.2-uber.jar')
         cmd = 'java -jar %s' % jmxterm
         self.run_cmd('echo %s' % cmd)
@@ -30,7 +30,6 @@ ACTION LIST
         jmxterm = pkg_resources.resource_filename(__name__, '../../lib/jmxterm-1.0.2-uber.jar')
         cmd = 'echo jvms | java -jar %s -n' % jmxterm
         self.run_cmd(cmd)
-
 
     def _list_resources(self):
         jmxterm = pkg_resources.resource_filename(__name__, '../../lib/jmxterm-1.0.2-uber.jar')
@@ -41,6 +40,4 @@ ACTION LIST
         for one in jvms:
             content = one[1] if len(one[1]) <= 100 else one[1][5:100]
 
-            print(str(one[0] + ":" + one[0] +' ' + content))
-
-
+            print(str(one[0] + ":" + one[0] + ' ' + content))

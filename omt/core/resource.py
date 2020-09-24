@@ -146,7 +146,6 @@ class Resource:
     def _list_resources(self):
         pass
 
-
     def help(self):
         raw_command = self.context['all']
         index = self.context['index']

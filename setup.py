@@ -5,7 +5,7 @@ install_requires = [
     'pyfiglet==0.8.post1',
     'Click==7.0',
     'psutil',
-
+    'pyrabbit==1.1.0'
 ]
 
 
