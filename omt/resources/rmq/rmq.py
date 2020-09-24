@@ -3,7 +3,7 @@ import pika
 import pyrabbit
 
 from omt.utils import UrlUtils
-from omt.utils.rabbitmq import RabbitmqManagement
+from omt.utils.rabbitmq import Management
 
 
 class Rmq(Resource):
@@ -19,7 +19,7 @@ class Rmq(Resource):
 
         parsed = url_utils.parse()
         self.context['common'] = {
-            'client': RabbitmqManagement({
+            'client': Management({
                 'hostname': parsed.hostname,
                 'port': parsed.port,
                 'username': parsed.username,
