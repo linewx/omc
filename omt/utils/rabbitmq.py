@@ -538,7 +538,7 @@ class Management:
                                "verbose": True,
                                "format": "table",
                                "depth": 1,
-                                "vhost": "/",
+                                "vhost": "",
                                "sort": None,
                                "sort_reverse": None,
                                "bash_completion": False
