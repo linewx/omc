@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-import sys
 import logging
-from omt import utils
-import omt
+import sys
 import traceback
+
 import pkg_resources
 
 
@@ -39,7 +38,7 @@ def main():
         context = {
             'all': sys.argv,
             'index': 1,
-            type: 'web'
+            type: 'cmd'
         }
         clazz(context)._exec()
     except Exception as inst:

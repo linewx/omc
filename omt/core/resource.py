@@ -62,46 +62,55 @@ class Resource:
         raw_command = self.context['all']
         index = self.context['index']
         params = raw_command[index + 1:]
-        if len(params) == 0:
-            self._run()
-        elif params[0].startswith('-'):
-            self._run()
-        else:
-            # chain to other resource
-            first_param = params[0]
+        self.context[resource_name] = []  # init reosurce params
 
-            try:
-                # detect if it's a resource type
-                mod_path = (str(self.__class__.__module__)).split('.')[:-1]
-                mod_path.extend([first_param, first_param])
-                mod = __import__('.'.join(mod_path), fromlist=[first_param.capitalize()])
-                context = copy.copy(self.context)
-                context['index'] = self.context['index'] + 1
-                context[resource_name] = self.context[resource_name]
-                if hasattr(mod, first_param.capitalize()):
-                    clazz = getattr(mod, first_param.capitalize())
-                    instance = clazz(context)
-                    return instance._execute()
-            except ModuleNotFoundError as inst:
-                self.logger.info(inst)
+        while True:
+            if not params:
+                # has no params, stop parsing then start to run default action
+                self._run()
+                break
 
-                # if not a resource, detect if it's action
-                if hasattr(self, first_param):
-                    action = getattr(self, first_param)
+            else:
+                # has params
+                next_value = params[0]
+                if next_value.startswith('-'):
+                    # next value is resource params
+                    self.context[resource_name].append(params[0])
+                    self.context['index'] = self.context['index'] + 1  # increase index
+                    index = self.context['index']
+                    params = raw_command[index + 1:]
+                elif next_value in self._get_submodules():
+                    # chain to other resource
+
+                    try:
+                        # detect if it's a resource type
+                        mod_path = (str(self.__class__.__module__)).split('.')[:-1]
+                        mod_path.extend([next_value, next_value])
+                        mod = __import__('.'.join(mod_path), fromlist=[next_value.capitalize()])
+                        context = copy.copy(self.context)
+                        context['index'] = self.context['index'] + 1
+                        context[resource_name] = self.context[resource_name]
+                        if hasattr(mod, next_value.capitalize()):
+                            clazz = getattr(mod, next_value.capitalize())
+                            instance = clazz(context)
+                            return instance._execute()
+                    except ModuleNotFoundError as inst:
+                        self.logger.info(inst)
+
+
+                elif hasattr(self, next_value):
+                    # next_value is resource action
+                    action = getattr(self, next_value)
                     self.context['index'] += 1
                     return action()
                 else:
-                    # if not resource or action, treat as param
-                    if self.has_params is None:
-                        self.has_params = True
-
-                        self.context['index'] = self.context['index'] + 1
-                        self.context[resource_name] = first_param
-                        return self._execute()
-                    else:
-                        import traceback
-                        traceback.print_exc()
-                        self.logger.error('can not parse the command')
+                    #
+                    # if self.has_params is None:
+                    #     self.has_params = True
+                    self.context['index'] = self.context['index'] + 1
+                    index = self.context['index']
+                    self.context[resource_name].append(next_value)
+                    params = raw_command[index + 1:]
 
     def description(self):
         """this is the description for resources"""
@@ -121,7 +130,9 @@ class Resource:
 
                 # available modules
                 # pkg_resources.resource_listdir('omt')
-                self._get_submodules()
+                # self._get_submodules()
+                for one_module in self._get_submodules():
+                    print(one_module + ":" + 'submodule-' + one_module)
                 return description
         except Exception as inst:
             # keep silent in completion mode
@@ -139,9 +150,8 @@ class Resource:
         filterd_modules = [one for one in all_resources if
                            pkg_resources.resource_isdir('.'.join(module_path) + '.' + current_module,
                                                         one) is True and one not in ['__pycache__']]
-        for one_module in filterd_modules:
-            print(one_module + ":" + 'submodule-' + one_module)
-        return
+
+        return filterd_modules
 
     def _list_resources(self):
         pass
