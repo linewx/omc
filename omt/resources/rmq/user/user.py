@@ -1,8 +1,7 @@
 from omt.core import Resource
 
 
-class Binding(Resource):
+class User(Resource):
     def list(self):
         client = self.context['common']['client']
-        client.invoke_list('bindings')
-
+        client.invoke_list('users')

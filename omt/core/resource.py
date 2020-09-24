@@ -103,6 +103,9 @@ class Resource:
                             result = instance._execute()
                             self._after_sub_resource()
                             return result
+                        else:
+                            self.logger.error("module %s deteched, but not exists in fact", next_value)
+                            return
                     except ModuleNotFoundError as inst:
                         self.logger.info(inst)
 
@@ -171,7 +174,6 @@ class Resource:
         params = raw_command[index + 1:]
         if len(params) == 0:
             return textwrap.dedent(self.__doc__)
-            return
         try:
             first_param = params[0]
             # detect if it's a resource type
