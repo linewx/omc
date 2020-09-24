@@ -489,6 +489,13 @@ class RabbitmqManagement:
         exchanges = self.get(uri)
         return json.loads(exchanges)
 
+    def get_bindings(self):
+        uri = "/bindings"
+        if self.options.get('vhost'):
+            uri += "/%s" % quote_plus(self.options.get('vhost'))
+        bindings = self.get(uri)
+        return json.loads(bindings)
+
 
 if __name__ == "__main__":
     rmq = RabbitmqManagement({
@@ -498,4 +505,5 @@ if __name__ == "__main__":
 
     # rmq.export_def("/tmp/rmq.json")
     # print(rmq.get_queues())
-    print(rmq.get_exchanges())
+    # print(rmq.get_exchanges())
+    print(rmq.get_bindings())
