@@ -4,28 +4,52 @@ import pyrabbit
 
 from omt.utils import UrlUtils
 from omt.utils.rabbitmq import Management
+import argparse
 
 
 class Rmq(Resource):
+    def __init__(self, context={}, type='web'):
+        super().__init__(context, type)
+        self.parser = argparse.ArgumentParser()
+        self.parser.add_argument('--vhost', nargs='?', help='rabbitmq vhost')
+        self.parser.add_argument('url', nargs='?', help='rabbitmq connection string', default='')
+
     def _list_resources(self):
         pass
 
     def _before_sub_resource(self):
-        url = self._get_resource_value()[0]
-        url_utils = UrlUtils(url)
-        url_without_identification = url_utils.get_hostname() + ":" + str(url_utils.get_port())
-        username = url_utils.get_username()
-        password = url_utils.get_password()
-
-        parsed = url_utils.parse()
         self.context['common'] = {
-            'client': Management({
-                'hostname': parsed.hostname,
-                'port': parsed.port,
-                'username': parsed.username,
-                'password': parsed.password
-            })
+            'client': Management(self._build_configuration())
         }
+
+    def _build_configuration(self):
+        args = self.parser.parse_args(self._get_resource_value())
+        config = {}
+        if args.url is not None:
+            if 'http://' in args.url:
+                # connection string: http://guest:guest@localhost:15672
+                url_utils = UrlUtils(args.url)
+                parsed = url_utils.parse()
+                config = {
+                    'hostname': parsed.hostname if parsed.hostname else 'localhost',
+                    'port': parsed.port if parsed.port else 15672,
+                    'username': parsed.username if parsed.username else 'guest',
+                    'password': parsed.password if parsed.password else 'guest'
+                }
+            else:
+                # parsed as instance, read from config file
+                pass
+        else:
+            # no url provided
+            pass
+
+        config['vhost'] = args.vhost
+        return config
+
+
+
+
+
 
 
 def publish():
@@ -62,8 +86,8 @@ def consume():
 
 if __name__ == '__main__':
     import sys
+
     if 'consume' in sys.argv:
         consume()
     elif 'publish' in sys.argv:
         publish()
-
