@@ -1,9 +1,12 @@
+import os
+
 from omt.core import Resource
 import pika
+import argparse
 
 from omt.utils import UrlUtils
 from omt.utils.rabbitmq import Management
-import argparse
+from omt.config import settings
 
 
 class Rmq(Resource):
@@ -37,6 +40,12 @@ class Rmq(Resource):
                 }
             else:
                 # parsed as instance, read from config file
+                import json
+                config_file_name = os.path.join(settings.RESOURCE_CONFIG_DIR, self.__class__.__name__.lower()  + '.json')
+                with open(config_file_name) as f:
+                    instances = json.load(f)
+                    if args.url in instances:
+                        config = instances[args.url]
                 pass
         else:
             # no url provided
