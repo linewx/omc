@@ -1,6 +1,5 @@
 from omt.core import Resource
 import pika
-import pyrabbit
 
 from omt.utils import UrlUtils
 from omt.utils.rabbitmq import Management
@@ -43,13 +42,9 @@ class Rmq(Resource):
             # no url provided
             pass
 
-        config['vhost'] = args.vhost
+        if args.vhost is not None:
+            config['vhost'] = args.vhost
         return config
-
-
-
-
-
 
 
 def publish():

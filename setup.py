@@ -4,8 +4,7 @@ install_requires = [
     'dynaconf[all]==2.2.3',
     'pyfiglet==0.8.post1',
     'Click==7.0',
-    'psutil',
-    'pyrabbit==1.1.0'
+    'psutil'
 ]
 
 

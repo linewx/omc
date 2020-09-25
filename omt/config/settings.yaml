@@ -1,6 +1,8 @@
 default:
-  omt_home: ~/.omt/
-  DB:
+  omt_home: "@format {env[HOME]}/.omt"
+  config_dir: "@format {env[OMT_HOME]}/config"
+  resource_config_dir: "@format {env[OMT_HOME]}/resources"
+  db:
     drivername: sqlite
     database: "@format {env[OMT_HOME]}/omt.db"
   
