@@ -11,4 +11,9 @@ class Queue(Resource):
     def get(self):
         client = self.context['common']['client']
         queue_name = self._get_resource_value()[0]
-        client.invoke_get(['queue='+ queue_name])
+        client.invoke_get(['queue=' + queue_name])
+
+    def delete(self):
+        client = self.context['common']['client']
+        queue_name = self._get_resource_value()[0]
+        client.invoke_delete('queue', ['name=' + queue_name])

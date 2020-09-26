@@ -538,7 +538,7 @@ class Management:
                                "verbose": True,
                                "format": "table",
                                "depth": 1,
-                                "vhost": "",
+                                "vhost": "/",
                                "sort": None,
                                "sort_reverse": None,
                                "bash_completion": False
@@ -766,8 +766,8 @@ class Management:
             self.put(uri, json.dumps(upload))
         self.verbose("{0} declared".format(obj_type))
 
-    def invoke_delete(self):
-        (obj_type, uri, upload) = self.declare_delete_parse(DELETABLE)
+    def invoke_delete(self, obj_type, args):
+        (obj_type, uri, upload) = self.declare_delete_parse(DELETABLE, obj_type, args)
         self.delete(uri)
         self.verbose("{0} deleted".format(obj_type))
 
@@ -781,13 +781,13 @@ class Management:
         self.delete(uri)
         self.verbose("{0} purged".format(obj_type))
 
-    def declare_delete_parse(self, root):
-        assert_usage(len(self.args) > 0, 'Type not specified')
-        obj_type = self.args[0]
+    def declare_delete_parse(self, root, obj_type, args):
+        #assert_usage(len(self.args) > 0, 'Type not specified')
+        # obj_type = self.args[0]
         assert_usage(obj_type in root,
                      'Type {0} not recognised'.format(obj_type))
         obj = root[obj_type]
-        (uri, upload) = self.parse_args(self.args[1:], obj)
+        (uri, upload) = self.parse_args(args, obj)
         return (obj_type, uri, upload)
 
     def assert_mandatory_keys(self, mandatory, upload):
@@ -835,7 +835,7 @@ class Management:
         uri_args = {}
         for k in upload:
             v = upload[k]
-            if v and isinstance(v, (str, bytes)):
+            if v is not None and isinstance(v, (str, bytes)):
                 uri_args[k] = quote(v, '')
                 if k == 'destination_type':
                     uri_args['destination_char'] = v[0]

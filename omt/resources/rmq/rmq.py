@@ -1,7 +1,6 @@
 import os
 
 from omt.core import Resource
-import pika
 import argparse
 
 from omt.utils import UrlUtils
@@ -27,7 +26,7 @@ class Rmq(Resource):
     def _build_configuration(self):
         args = self.parser.parse_args(self._get_resource_value())
         config = {}
-        if args.url is not None:
+        if args.url:
             if 'http://' in args.url:
                 # connection string: http://guest:guest@localhost:15672
                 url_utils = UrlUtils(args.url)
@@ -42,6 +41,7 @@ class Rmq(Resource):
                 # parsed as instance, read from config file
                 import json
                 config_file_name = os.path.join(settings.RESOURCE_CONFIG_DIR, self.__class__.__name__.lower()  + '.json')
+
                 with open(config_file_name) as f:
                     instances = json.load(f)
                     if args.url in instances:
@@ -53,6 +53,7 @@ class Rmq(Resource):
 
         if args.vhost is not None:
             config['vhost'] = args.vhost
+            config['declare_vhost'] = args.vhost
         return config
 
 
