@@ -28,3 +28,16 @@ class CmdTaskMixin:
 
         except Exception as e:
             raise e
+
+
+class CompletionMixin:
+    def print_completion(self, descriptions, short_mode=False):
+        if type(descriptions) == list:
+            for one in descriptions:
+                if type(one) == tuple or type(one) == list:
+                    if not short_mode:
+                        print(":".join(one))
+                    else:
+                        print(one[0])
+                else:
+                    print(one)

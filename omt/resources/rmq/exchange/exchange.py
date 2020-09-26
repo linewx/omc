@@ -1,9 +1,18 @@
+import json
+
+from omt.common import CompletionMixin
 from omt.common.formater import format_list
 from omt.core import Resource
 import argparse
 
 
-class Exchange(Resource):
+class Exchange(Resource, CompletionMixin):
+    def _list_resources(self):
+    # for completions
+        client = self.context['common']['client']
+        exchanges = json.loads(client.invoke_list('exchanges'))
+        results = [(one['name'], "name is %(name)s, type is %(type)s | vhost is %(vhost)s" % one) for one in exchanges]
+        self.print_completion(results, short_mode=True)
 
     def list(self):
         client = self.context['common']['client']
