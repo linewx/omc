@@ -37,6 +37,12 @@ class Resource:
     def _get_resource_value(self):
         return self.context[self._get_resource_name()]
 
+    def _have_resource_value(self):
+        if self._get_resource_value():
+            return True
+        else:
+            return False
+
     def _get_action_params(self):
         return self.context['action_params']
 
@@ -132,24 +138,24 @@ class Resource:
         """this is the description for resources"""
         return self._get_resource_name()
 
+    def _completion(self, short_mode=False):
+        public_methods = self._get_public_method_completion()
+        sub_modules = self._get_sub_modules()
+        self._print_completion(public_methods, short_mode)
+        self._print_completion(sub_modules, short_mode)
+
+    def _get_public_method_completion(self):
+        public_methods = self._get_public_methods()
+        return [(one, getattr(self, one).__doc__ if getattr(self, one).__doc__ is not None else one) for one in
+                public_methods]
+
+    def _get_sub_modules(self):
+        return [(one_module, 'module ' + one_module) for one_module in self._get_submodules()]
+
     def completion(self):
         # list candidates for completions in zsh style (a:"description for a" b:"description for b")
         try:
-            if not self._get_resource_value():
-                self._list_resources()
-            else:
-                # public methods
-                public_methods = self._get_public_methods()
-                description = [(one, getattr(self, one).__doc__) for one in public_methods]
-                for one_desc in description:
-                    print(one_desc[0] + ':' + one_desc[0] if one_desc[1] is None else one_desc[1])
-
-                # available modules
-                # pkg_resources.resource_listdir('omt')
-                # self._get_submodules()
-                for one_module in self._get_submodules():
-                    print(one_module + ":" + 'submodule-' + one_module)
-                return description
+            self._completion()
         except Exception as inst:
             # keep silent in completion mode
             return
@@ -171,6 +177,17 @@ class Resource:
 
     def _list_resources(self):
         pass
+
+    def _print_completion(self, descriptions, short_mode=False):
+        if type(descriptions) == list:
+            for one in descriptions:
+                if type(one) == tuple or type(one) == list:
+                    if not short_mode:
+                        print(":".join(one))
+                    else:
+                        print(one[0])
+                else:
+                    print(one)
 
     def help(self):
         raw_command = self.context['all']

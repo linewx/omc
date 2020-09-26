@@ -64,7 +64,7 @@ class Binding(Resource, CompletionMixin):
             if len(params) == 1:
                 #no params, omt rmq binding completion
                 self.print_completion(['--src', '--dest'])
-                
+
             # omt rmq binding declare
 
         parser = argparse.ArgumentParser('exchange declare arguments')
