@@ -758,8 +758,8 @@ class Management:
             uri += "?" + query
         return (uri, obj_info, cols)
 
-    def invoke_declare(self):
-        (obj_type, uri, upload) = self.declare_delete_parse(DECLARABLE)
+    def invoke_declare(self, obj_type, args):
+        (obj_type, uri, upload) = self.declare_delete_parse(DECLARABLE, obj_type, args)
         if obj_type == 'binding':
             self.post(uri, json.dumps(upload))
         else:

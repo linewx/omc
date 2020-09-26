@@ -17,3 +17,15 @@ class Queue(Resource):
         client = self.context['common']['client']
         queue_name = self._get_resource_value()[0]
         client.invoke_delete('queue', ['name=' + queue_name])
+
+    def declare(self):
+        # parser = argparse.ArgumentParser('exchange declare arguments')
+        # parser.add_argument('--type', nargs='?', default='direct')
+
+        client = self.context['common']['client']
+        name = self._get_resource_value()[0]
+        # args = parser.parse_args(self._get_params())
+
+        client.invoke_declare('queue', ['name=' + name])
+
+

@@ -35,3 +35,20 @@ class Binding(Resource):
             delete_args.append('properties_key=' + args.binding_properties_key)
 
         client.invoke_delete('binding', delete_args)
+
+    def declare(self):
+        parser = argparse.ArgumentParser('exchange declare arguments')
+        parser.add_argument('--src', nargs='?', required=True, help='binding source')
+        parser.add_argument('--dest', nargs='?', required=True, help='binding destination')
+
+        client = self.context['common']['client']
+        args = parser.parse_args(self._get_params())
+
+        client.invoke_declare('binding', self.build_admin_params({
+            'source': args.src,
+            'destination': args.dest,
+
+        }))
+
+    def build_admin_params(self, params):
+        return ['='.join([k, v]) for k, v in params.items()]
