@@ -19,7 +19,7 @@ ACTION LIST
     """
 
     def _description(self):
-        return 'jmx tools'
+        return 'JMX(Java Management Extensions) Tool Set'
 
     def _run(self):
         jmxterm = pkg_resources.resource_filename(__name__, '../../lib/jmxterm-1.0.2-uber.jar')

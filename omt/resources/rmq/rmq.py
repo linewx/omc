@@ -15,8 +15,8 @@ class Rmq(Resource):
         self.parser.add_argument('--vhost', nargs='?', help='rabbitmq vhost')
         self.parser.add_argument('url', nargs='?', help='rabbitmq connection string', default='')
 
-    def _list_resources(self):
-        pass
+    def _description(self):
+        return "Rabbitmq Management Command Line Tool"
 
     def _before_sub_resource(self):
         self.context['common'] = {

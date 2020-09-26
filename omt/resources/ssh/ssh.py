@@ -3,8 +3,10 @@ from omt.core.resource import Resource
 from sqlalchemy.orm import sessionmaker
 import subprocess
 
-class Proxy(Resource):
+class Ssh(Resource):
     template = "ssh -nNT -L %(local_port)s:%(host)s:%(port)s %(bridge)s &"
+    def _description(self):
+        return 'SSH(Secure Shell) Smart Tool Set'
     
     def get_session(self):
         Session = sessionmaker()
@@ -18,7 +20,7 @@ class Proxy(Resource):
         session = Session()
         query = session.query(model.ProxyTable).filter(model.ProxyTable.service_name == service_name)
         the_row = query.first()
-        service_cmd = Proxy.template % the_row.__dict__
+        service_cmd = Ssh.template % the_row.__dict__
         subprocess.run(service_cmd, shell=True)
     
     def list(self):
