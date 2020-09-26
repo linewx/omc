@@ -721,7 +721,8 @@ class Management:
 
     def invoke_list(self, obj_type, args=None):
         (uri, obj_info, cols) = self.list_show_uri(LISTABLE, 'list', obj_type, args)
-        format_list(self.get(uri), cols, obj_info, self.options)
+        return self.get(uri)
+        #format_list(self.get(uri), cols, obj_info, self.options)
 
     def invoke_show(self):
         (uri, obj_info, cols) = self.list_show_uri(SHOWABLE, 'show')
@@ -747,7 +748,8 @@ class Management:
         if cols == [] and 'cols' in obj_info and self.use_cols():
             cols = obj_info['cols']
         if cols != []:
-            query.append("columns=" + ",".join(cols))
+            pass
+            # query.append("columns=" + ",".join(cols))
         sort = self.options.sort
         if sort:
             query.append("sort=" + sort)

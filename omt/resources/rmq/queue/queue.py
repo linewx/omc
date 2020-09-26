@@ -1,12 +1,12 @@
+from omt.common.formater import format_list
 from omt.core import Resource
 
 
 class Queue(Resource):
     def list(self):
         client = self.context['common']['client']
-        client.invoke_list('queues')
-        # for name in list(map(lambda x: x.get('name'), client.get_queues())):
-        #     print(name)
+        queues = client.invoke_list('queues')
+        format_list(queues)
 
     def get(self):
         client = self.context['common']['client']

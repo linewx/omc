@@ -1,3 +1,4 @@
+from omt.common.formater import format_list
 from omt.core import Resource
 import argparse
 
@@ -11,9 +12,14 @@ class Binding(Resource):
         self.parser.add_argument('--binding-destination-type', nargs='?', type=str, help='binding destination type')
         self.parser.add_argument('--binding-properties_key', nargs='?', type=str, help='binding property key')
 
+    def default_columns(self):
+        pass
+
     def list(self):
         client = self.context['common']['client']
-        client.invoke_list('bindings')
+        bindings = client.invoke_list('bindings')
+        format_list(bindings, ['source','destination', 'routing_key'], 'table')
+        #bindings = client.invoke_list('bindings')
 
     def delete(self):
         client = self.context['common']['client']

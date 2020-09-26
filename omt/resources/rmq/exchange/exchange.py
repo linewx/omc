@@ -1,12 +1,14 @@
+from omt.common.formater import format_list
 from omt.core import Resource
 import argparse
 
-class Exchange(Resource):
 
+class Exchange(Resource):
 
     def list(self):
         client = self.context['common']['client']
-        client.invoke_list('exchanges')
+        exchanges = client.invoke_list('exchanges')
+        format_list(exchanges)
 
     def delete(self):
         client = self.context['common']['client']
@@ -22,5 +24,3 @@ class Exchange(Resource):
         args = parser.parse_args(self._get_params())
 
         client.invoke_declare('exchange', ['name=' + name, "=".join(['type', args.type])])
-
-
