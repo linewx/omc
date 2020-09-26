@@ -37,6 +37,9 @@ class Resource:
     def _get_resource_value(self):
         return self.context[self._get_resource_name()]
 
+    def _get_action_params(self):
+        return self.context['action_params']
+
     def _get_params(self):
         raw_command = self.context['all']
         index = self.context['index']
@@ -114,6 +117,7 @@ class Resource:
                     # next_value is resource action
                     action = getattr(self, next_value)
                     self.context['index'] += 1
+                    self.context['action_params'] = raw_command[self.context['index'] + 1:]
                     return action()
                 else:
                     #
