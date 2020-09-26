@@ -18,7 +18,7 @@ ACTION LIST
 
     """
 
-    def description(self):
+    def _description(self):
         return 'jmx tools'
 
     def _run(self):

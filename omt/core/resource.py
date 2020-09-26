@@ -11,57 +11,53 @@ import textwrap
 
 
 class Resource:
-    """
-        NAME
-            project - project command
-
-        SYNOPSIS
-            project [RESOURCE] action [OPTION]
-
-        ACTION LIST
-            env - environment command
-            edit - edit the doc
-    """
-
+    # todo@rain: to differentiate between the following methods:
+    # __methods private methods, don't inherit in child method
+    # _methods, can be inherit in child method, but can't be invoked and public to end users
+    # method, public method, can be invoke by the system
     def __init__(self, context={}, type='web'):
         self.context = context
         # set default resoure context
-        self.context[self._get_resource_name()] = []
+        self.context[self.__get_resource_name()] = []
         self.logger = logging.getLogger('.'.join([self.__module__, self.__class__.__name__]))
         self.has_params = None
         self.type = type
 
-    def _get_resource_name(self):
-        return (self.__class__.__name__).lower()
+    ################################################################
+    #################### start method ##############################
+    ################################################################
+    # main method, system entrypoint
 
-    def _get_resource_value(self):
-        return self.context[self._get_resource_name()]
+    def __exec(self):
+        return self.__format(self.__execute())
 
-    def _have_resource_value(self):
-        if self._get_resource_value():
+    ################################################################
+    #################### private method ############################
+    ################################################################
+    # system methods, don't modify them
+
+    def __get_resource_name(self):
+        return self.__class__.__name__.lower()
+
+    def __get_resource_value(self):
+        return self.context[self.__get_resource_name()]
+
+    def __have_resource_value(self):
+        if self.__get_resource_value():
             return True
         else:
             return False
 
-    def _get_action_params(self):
+    def __get_action_params(self):
         return self.context['action_params']
 
-    def _get_params(self):
+    def __get_params(self):
         raw_command = self.context['all']
         index = self.context['index']
         params = raw_command[index + 1:]
         return params
 
-    def _run(self):
-        raise Exception('no run action defined')
-
-    def _before_sub_resource(self):
-        pass
-
-    def _after_sub_resource(self):
-        pass
-
-    def _format(self, result):
+    def __format(self, result):
         if self.type == 'cmd':
             print(result)
         elif self.type == 'web':
@@ -69,11 +65,8 @@ class Resource:
         else:
             raise Exception("unsupported type")
 
-    def _exec(self):
-        return self._format(self._execute())
-
-    def _execute(self):
-        resource_name = self._get_resource_name()
+    def __execute(self):
+        resource_name = self.__get_resource_name()
         raw_command = self.context['all']
         index = self.context['index']
         params = raw_command[index + 1:]
@@ -94,7 +87,7 @@ class Resource:
                     self.context['index'] = self.context['index'] + 1  # increase index
                     index = self.context['index']
                     params = raw_command[index + 1:]
-                elif next_value in self._get_submodules():
+                elif next_value in self.__get_submodules():
                     # chain to other resource
 
                     try:
@@ -109,7 +102,7 @@ class Resource:
                         if hasattr(mod, next_value.capitalize()):
                             clazz = getattr(mod, next_value.capitalize())
                             instance = clazz(context)
-                            result = instance._execute()
+                            result = instance.__execute()
                             self._after_sub_resource()
                             return result
                         else:
@@ -134,36 +127,10 @@ class Resource:
                     self.context[resource_name].append(next_value)
                     params = raw_command[index + 1:]
 
-    def description(self):
-        """this is the description for resources"""
-        return self._get_resource_name()
-
-    def _completion(self, short_mode=False):
-        public_methods = self._get_public_method_completion()
-        sub_modules = self._get_sub_modules()
-        self._print_completion(public_methods, short_mode)
-        self._print_completion(sub_modules, short_mode)
-
-    def _get_public_method_completion(self):
-        public_methods = self._get_public_methods()
-        return [(one, getattr(self, one).__doc__ if getattr(self, one).__doc__ is not None else one) for one in
-                public_methods]
-
-    def _get_sub_modules(self):
-        return [(one_module, 'module ' + one_module) for one_module in self._get_submodules()]
-
-    def completion(self):
-        # list candidates for completions in zsh style (a:"description for a" b:"description for b")
-        try:
-            self._completion()
-        except Exception as inst:
-            # keep silent in completion mode
-            return
-
-    def _get_public_methods(self):
+    def __get_public_methods(self):
         return list(filter(lambda x: callable(getattr(self, x)) and not x.startswith('_'), dir(self)))
 
-    def _get_submodules(self):
+    def __get_submodules(self):
         # for example, module name is 'omt.resources.jmx.jmx', submodules should be other folder within omt.resources.jmx folder
         module_path = self.__module__.split('.')
         module_path.pop()
@@ -175,10 +142,7 @@ class Resource:
 
         return filterd_modules
 
-    def _list_resources(self):
-        pass
-
-    def _print_completion(self, descriptions, short_mode=False):
+    def __print_completion(self, descriptions, short_mode=False):
         if type(descriptions) == list:
             for one in descriptions:
                 if type(one) == tuple or type(one) == list:
@@ -189,7 +153,46 @@ class Resource:
                 else:
                     print(one)
 
-    def help(self):
+    def __get_public_method_completion(self):
+        public_methods = self.__get_public_methods()
+        return [(one, getattr(self, one).__doc__ if getattr(self, one).__doc__ is not None else one) for one in
+                public_methods]
+
+    def __get_sub_modules(self):
+        return [(one_module, 'module ' + one_module) for one_module in self.__get_submodules()]
+
+    ################################################################
+    #################### protected method ##########################
+    ################################################################
+    # default methods for children, can be overwrite in children
+
+    # default method to run if  no action provided
+    def _run(self):
+        raise Exception('default action is not defined')
+
+    def _before_sub_resource(self):
+        pass
+
+    def _after_sub_resource(self):
+        pass
+
+    def _before_method(self):
+        pass
+
+    def _after_method(self):
+        pass
+
+    def _description(self):
+        """this is the description for resources"""
+        return self.__get_resource_name()
+
+    def _completion(self, short_mode=False):
+        public_methods = self.__get_public_method_completion()
+        sub_modules = self.__get_sub_modules()
+        self.__print_completion(public_methods, short_mode)
+        self.__print_completion(sub_modules, short_mode)
+
+    def _help(self):
         raw_command = self.context['all']
         index = self.context['index']
         params = raw_command[index + 1:]
@@ -209,3 +212,20 @@ class Resource:
                 print(textwrap.dedent(action.__doc__))
             except Exception as inst:
                 print(inst)
+
+    ################################################################
+    #################### public method #############################
+    ################################################################
+    # common public user methods, inherit protected methods if need change.
+
+    def completion(self):
+        # list candidates for completions in zsh style (a:"description for a" b:"description for b")
+        try:
+            self._completion()
+        except Exception as inst:
+            # keep silent in completion mode
+            return
+
+    def help(self):
+        self._help()
+

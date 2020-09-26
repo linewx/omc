@@ -18,7 +18,7 @@ def list_resources():
         mod = __import__(".".join(['omt', 'resources', resource_type, resource_type]),
                          fromlist=[resource_type.capitalize()])
         clazz = getattr(mod, resource_type.capitalize())
-        print(resource_type + ":" + clazz({}).description())
+        print(resource_type + ":" + clazz({})._description())
 
 
 def main():
@@ -40,7 +40,7 @@ def main():
             'index': 1,
             type: 'cmd'
         }
-        clazz(context)._exec()
+        clazz(context).__exec()
     except Exception as inst:
         traceback.print_exc()
         logger.error(inst)

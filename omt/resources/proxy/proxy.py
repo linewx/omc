@@ -12,7 +12,7 @@ class Proxy(Resource):
         return Session()
 
     def start(self):
-        service_name = self._get_resource_value()
+        service_name = self.__get_resource_value()
         Session = sessionmaker()
         Session.configure(bind=engine)
         session = Session()

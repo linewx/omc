@@ -5,7 +5,7 @@ from omt.core import Resource
 
 
 class Doc(Resource):
-    def description(self):
+    def _description(self):
         'description for doc'
         return 'view documents'
 

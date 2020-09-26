@@ -20,12 +20,12 @@ class Queue(Resource, CompletionMixin):
 
     def get(self):
         client = self.context['common']['client']
-        queue_name = self._get_resource_value()[0]
+        queue_name = self.__get_resource_value()[0]
         client.invoke_get(['queue=' + queue_name])
 
     def delete(self):
         client = self.context['common']['client']
-        queue_name = self._get_resource_value()[0]
+        queue_name = self.__get_resource_value()[0]
         client.invoke_delete('queue', ['name=' + queue_name])
 
     def declare(self):
@@ -33,7 +33,7 @@ class Queue(Resource, CompletionMixin):
         # parser.add_argument('--type', nargs='?', default='direct')
 
         client = self.context['common']['client']
-        name = self._get_resource_value()[0]
+        name = self.__get_resource_value()[0]
         # args = parser.parse_args(self._get_params())
 
         client.invoke_declare('queue', ['name=' + name])
