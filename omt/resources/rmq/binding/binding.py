@@ -12,10 +12,10 @@ class Binding(Resource, CompletionMixin):
         self.parser = argparse.ArgumentParser("binding arguments parser")
         self.parser.add_argument('--src', nargs='?', type=str, help='binding source')
         self.parser.add_argument('--dest', nargs='?', type=str, help='binding destination')
-        self.parser.add_argument('--type', nargs='?', type=str, help='binding destination type')
-        self.parser.add_argument('--type', nargs='?', type=str, help='binding property key')
+        self.parser.add_argument('--type', nargs='?', type=str, help='binding destination type', default='queue')
+        self.parser.add_argument('--key', nargs='?', type=str, help='binding property key')
 
-    def default_columns(self):
+    def _default_columns(self):
         client = self.context['common']['client']
         bindings = client.invoke_list('bindings')
         format_list(bindings, ['source', 'destination', 'routing_key'], 'table')
@@ -74,10 +74,10 @@ class Binding(Resource, CompletionMixin):
         client = self.context['common']['client']
         args = parser.parse_args(self._get_params())
 
-        client.invoke_declare('binding', self.build_admin_params({
+        client.invoke_declare('binding', self._build_admin_params({
             'source': args.src,
             'destination': args.dest,
         }))
 
-    def build_admin_params(self, params):
+    def _build_admin_params(self, params):
         return ['='.join([k, v]) for k, v in params.items()]
