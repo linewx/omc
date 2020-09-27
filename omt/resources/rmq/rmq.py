@@ -2,7 +2,7 @@ import os
 
 from omt.core import Resource
 import argparse
-
+import json
 from omt.utils import UrlUtils
 from omt.utils.rabbitmq import Management
 from omt.config import settings
@@ -23,6 +23,21 @@ class Rmq(Resource):
             'client': Management(self._build_configuration())
         }
 
+    def _completion(self, short_mode=True):
+        super()._completion(False)
+
+        if not self._have_resource_value():
+            # list rabbitmq connection instance from config file
+            try:
+                config_file_name = os.path.join(settings.RESOURCE_CONFIG_DIR, self.__class__.__name__.lower() + '.json')
+
+                with open(config_file_name) as f:
+                    instances = json.load(f)
+                    self._print_completion([(key, 'instance=' + key) for key, value in instances.items()], False)
+            except:
+                # no config file found
+                pass
+
     def _build_configuration(self):
         args = self.parser.parse_args(self._get_resource_value())
         config = {}
@@ -39,8 +54,8 @@ class Rmq(Resource):
                 }
             else:
                 # parsed as instance, read from config file
-                import json
-                config_file_name = os.path.join(settings.RESOURCE_CONFIG_DIR, self.__class__.__name__.lower()  + '.json')
+
+                config_file_name = os.path.join(settings.RESOURCE_CONFIG_DIR, self.__class__.__name__.lower() + '.json')
 
                 with open(config_file_name) as f:
                     instances = json.load(f)

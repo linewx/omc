@@ -15,7 +15,7 @@ class Binding(Resource, CompletionMixin):
         self.parser.add_argument('--src', nargs='?', type=str, help='binding source')
         self.parser.add_argument('--dest', nargs='?', type=str, help='binding destination')
         self.parser.add_argument('--type', nargs='?', type=str, help='binding destination type', default='queue')
-        self.parser.add_argument('--key', nargs='?', type=str, help='binding property key')
+        self.parser.add_argument('--key', nargs='?', type=str, help='binding property key', default='')
         self.parser.add_argument('--force', nargs='?', type=bool, help='force to delete')
 
     def _default_columns(self):
@@ -111,7 +111,7 @@ class Binding(Resource, CompletionMixin):
             prompts = []
             if not params:
                 # no params, omt rmq binding completion
-                self.print_completion(['--src', '--dest'])
+                self.print_completion(['--src', '--dest', '--key'])
 
             elif params[-1].strip() == '--src':
                 # list all exchanges
@@ -129,13 +129,15 @@ class Binding(Resource, CompletionMixin):
                 self.print_completion(results, short_mode=True)
 
             else:
-                self.print_completion(['--src', '--dest'])
+                self.print_completion(['--src', '--dest', '--key'])
 
             return
 
         parser = argparse.ArgumentParser('exchange declare arguments')
-        parser.add_argument('--src', nargs='?', required=True, help='binding source')
-        parser.add_argument('--dest', nargs='?', required=True, help='binding destination')
+        parser.add_argument('--src', nargs='?', type=str, help='binding source', required=True)
+        parser.add_argument('--dest', nargs='?', type=str, help='binding destination', required=True)
+        parser.add_argument('--type', nargs='?', type=str, help='binding destination type', default='queue')
+        parser.add_argument('--key', nargs='?', type=str, help='binding property key', default='')
 
         client = self.context['common']['client']
         args = parser.parse_args(self._get_params())
@@ -143,4 +145,5 @@ class Binding(Resource, CompletionMixin):
         client.invoke_declare('binding', build_admin_params({
             'source': args.src,
             'destination': args.dest,
+            'routing_key': args.key
         }))
