@@ -1,5 +1,7 @@
 import argparse
 import json
+import sys
+import time
 
 from omt.common.formater import format_list
 from omt.core import Resource
@@ -62,3 +64,12 @@ class Exchange(Resource):
 
         }
         client.invoke_publish(build_admin_params(params))
+
+    def listen(self):
+        try:
+            while True:
+                print('i wake up')
+                time.sleep(5)
+        except KeyboardInterrupt:
+            print("bye bye")
+            sys.exit(0)
