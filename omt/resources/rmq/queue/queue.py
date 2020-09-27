@@ -25,9 +25,12 @@ class Queue(Resource, CompletionMixin):
         format_list(queues)
 
     def get(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--count', nargs="?", help='message count', type=str, default='100')
+        args = parser.parse_args(self._get_params())
         client = self.context['common']['client']
         queue_name = self._get_resource_value()[0]
-        client.invoke_get(['queue=' + queue_name])
+        client.invoke_get(['queue=' + queue_name, 'count=' + args.count])
 
     def delete(self):
         client = self.context['common']['client']
