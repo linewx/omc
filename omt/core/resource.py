@@ -18,7 +18,7 @@ class Resource:
     def __init__(self, context={}, type='web'):
         self.context = context
         # set default resoure context
-        self.context[self.__get_resource_name()] = []
+        self.context[self._get_resource_name()] = []
         self.logger = logging.getLogger('.'.join([self.__module__, self.__class__.__name__]))
         self.has_params = None
         self.type = type
@@ -28,35 +28,13 @@ class Resource:
     ################################################################
     # main method, system entrypoint
 
-    def __exec(self):
+    def _exec(self):
         return self.__format(self.__execute())
 
     ################################################################
     #################### private method ############################
     ################################################################
-    # system methods, don't modify them
-
-    def __get_resource_name(self):
-        return self.__class__.__name__.lower()
-
-    def __get_resource_value(self):
-        return self.context[self.__get_resource_name()]
-
-    def __have_resource_value(self):
-        if self.__get_resource_value():
-            return True
-        else:
-            return False
-
-    def __get_action_params(self):
-        return self.context['action_params']
-
-    def __get_params(self):
-        raw_command = self.context['all']
-        index = self.context['index']
-        params = raw_command[index + 1:]
-        return params
-
+    # private mehtod, only invoked in this class
     def __format(self, result):
         if self.type == 'cmd':
             print(result)
@@ -66,7 +44,7 @@ class Resource:
             raise Exception("unsupported type")
 
     def __execute(self):
-        resource_name = self.__get_resource_name()
+        resource_name = self._get_resource_name()
         raw_command = self.context['all']
         index = self.context['index']
         params = raw_command[index + 1:]
@@ -87,7 +65,7 @@ class Resource:
                     self.context['index'] = self.context['index'] + 1  # increase index
                     index = self.context['index']
                     params = raw_command[index + 1:]
-                elif next_value in self.__get_submodules():
+                elif next_value in self._get_submodules():
                     # chain to other resource
 
                     try:
@@ -127,10 +105,35 @@ class Resource:
                     self.context[resource_name].append(next_value)
                     params = raw_command[index + 1:]
 
-    def __get_public_methods(self):
+    ################################################################
+    #################### system method ############################
+    ################################################################
+    # system methods, don't modify!!!
+    def _get_resource_name(self):
+        return self.__class__.__name__.lower()
+
+    def _get_resource_value(self):
+        return self.context[self._get_resource_name()]
+
+    def _have_resource_value(self):
+        if self._get_resource_value():
+            return True
+        else:
+            return False
+
+    def _get_action_params(self):
+        return self.context['action_params']
+
+    def _get_params(self):
+        raw_command = self.context['all']
+        index = self.context['index']
+        params = raw_command[index + 1:]
+        return params
+
+    def _get_public_methods(self):
         return list(filter(lambda x: callable(getattr(self, x)) and not x.startswith('_'), dir(self)))
 
-    def __get_submodules(self):
+    def _get_submodules(self):
         # for example, module name is 'omt.resources.jmx.jmx', submodules should be other folder within omt.resources.jmx folder
         module_path = self.__module__.split('.')
         module_path.pop()
@@ -142,7 +145,7 @@ class Resource:
 
         return filterd_modules
 
-    def __print_completion(self, descriptions, short_mode=False):
+    def _print_completion(self, descriptions, short_mode=False):
         if type(descriptions) == list:
             for one in descriptions:
                 if type(one) == tuple or type(one) == list:
@@ -153,13 +156,13 @@ class Resource:
                 else:
                     print(one)
 
-    def __get_public_method_completion(self):
-        public_methods = self.__get_public_methods()
+    def _get_public_method_completion(self):
+        public_methods = self._get_public_methods()
         return [(one, getattr(self, one).__doc__ if getattr(self, one).__doc__ is not None else one) for one in
                 public_methods]
 
-    def __get_sub_modules(self):
-        return [(one_module, 'module ' + one_module) for one_module in self.__get_submodules()]
+    def _get_sub_modules(self):
+        return [(one_module, 'module ' + one_module) for one_module in self._get_submodules()]
 
     ################################################################
     #################### protected method ##########################
@@ -184,13 +187,13 @@ class Resource:
 
     def _description(self):
         """this is the description for resources"""
-        return self.__get_resource_name()
+        return self._get_resource_name()
 
     def _completion(self, short_mode=False):
-        public_methods = self.__get_public_method_completion()
-        sub_modules = self.__get_sub_modules()
-        self.__print_completion(public_methods, short_mode)
-        self.__print_completion(sub_modules, short_mode)
+        public_methods = self._get_public_method_completion()
+        sub_modules = self._get_sub_modules()
+        self._print_completion(public_methods, short_mode)
+        self._print_completion(sub_modules, short_mode)
 
     def _help(self):
         raw_command = self.context['all']
@@ -228,4 +231,3 @@ class Resource:
 
     def help(self):
         self._help()
-

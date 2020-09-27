@@ -24,7 +24,7 @@ class Rmq(Resource):
         }
 
     def _build_configuration(self):
-        args = self.parser.parse_args(self.__get_resource_value())
+        args = self.parser.parse_args(self._get_resource_value())
         config = {}
         if args.url:
             if 'http://' in args.url:

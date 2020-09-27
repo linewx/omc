@@ -23,7 +23,7 @@ def cmd(path):
             'all': ['web', *argv],
             'index': 1
         }
-        data = clazz(context).__exec()
+        data = clazz(context)._exec()
     
         response = app.response_class(
             response = json.dumps(data),

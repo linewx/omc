@@ -34,13 +34,13 @@ class Binding(Resource, CompletionMixin):
         format_list(bindings)
 
     def delete(self):
-        if 'completion' in self.__get_params():
+        if 'completion' in self._get_params():
             self._binding_list()
             return
 
         client = self.context['common']['client']
 
-        args = self.parser.parse_args(self.__get_action_params())
+        args = self.parser.parse_args(self._get_action_params())
         if args.src is None:
             raise Exception("binding source can not be empty")
 
@@ -59,8 +59,8 @@ class Binding(Resource, CompletionMixin):
         client.invoke_delete('binding', delete_args)
 
     def declare(self):
-        if 'completion' in self.__get_params():
-            params = self.__get_params()
+        if 'completion' in self._get_params():
+            params = self._get_params()
             if len(params) == 1:
                 #no params, omt rmq binding completion
                 self.print_completion(['--src', '--dest'])
@@ -72,7 +72,7 @@ class Binding(Resource, CompletionMixin):
         parser.add_argument('--dest', nargs='?', required=True, help='binding destination')
 
         client = self.context['common']['client']
-        args = parser.parse_args(self.__get_params())
+        args = parser.parse_args(self._get_params())
 
         client.invoke_declare('binding', self.build_admin_params({
             'source': args.src,

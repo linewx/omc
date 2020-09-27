@@ -40,7 +40,7 @@ def main():
             'index': 1,
             type: 'cmd'
         }
-        clazz(context).__exec()
+        clazz(context)._exec()
     except Exception as inst:
         traceback.print_exc()
         logger.error(inst)

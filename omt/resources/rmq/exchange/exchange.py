@@ -9,13 +9,13 @@ class Exchange(Resource):
     def _completion(self, short_mode=False):
         super()._completion(True)
 
-        if not self.__get_resource_value():
+        if not self._get_resource_value():
             # resource haven't filled yet
             client = self.context['common']['client']
             exchanges = json.loads(client.invoke_list('exchanges'))
             results = [(one['name'], "name is %(name)s, type is %(type)s | vhost is %(vhost)s" % one) for one in
                        exchanges]
-            self.__print_completion(results, short_mode=True)
+            self._print_completion(results, short_mode=True)
 
     def list(self):
         client = self.context['common']['client']
@@ -24,7 +24,7 @@ class Exchange(Resource):
 
     def delete(self):
         client = self.context['common']['client']
-        name = self.__get_resource_value()[0]
+        name = self._get_resource_value()[0]
         client.invoke_delete('exchange', ['name=' + name])
 
     def declare(self):
@@ -32,7 +32,7 @@ class Exchange(Resource):
         parser.add_argument('--type', nargs='?', default='direct')
 
         client = self.context['common']['client']
-        name = self.__get_resource_value()[0]
-        args = parser.parse_args(self.__get_params())
+        name = self._get_resource_value()[0]
+        args = parser.parse_args(self._get_params())
 
         client.invoke_declare('exchange', ['name=' + name, "=".join(['type', args.type])])
