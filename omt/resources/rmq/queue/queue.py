@@ -1,4 +1,7 @@
+import argparse
 import json
+
+from omt.utils.rmq_utils import build_admin_params
 
 from omt.common import CompletionMixin
 from omt.common.formater import format_list
@@ -43,5 +46,29 @@ class Queue(Resource, CompletionMixin):
 
     def publish(self):
         '''Message will be published to the default exchange(amq.default) with routing key queue_name, routing it to this queue.'''
+        client = self.context['common']['client']
+        if not self._have_resource_value():
+            raise Exception("no queue name provided")
+        name = self._get_resource_value()[0]
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--payload', nargs='?', help='message payload')
 
+        args = parser.parse_args(self._get_params())
 
+        if args.payload is None:
+            raise Exception("payload can't be empty")
+
+        params = {
+            'exchange': 'amq.default',
+            'routing_key': name,
+            'payload': args.payload
+
+        }
+        client.invoke_publish(build_admin_params(params))
+
+    def purge(self):
+        client = self.context['common']['client']
+        if not self._have_resource_value():
+            raise Exception("no queue name provided")
+        name = self._get_resource_value()[0]
+        client.invoke_purge('queue', ['name=' + name])

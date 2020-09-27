@@ -778,8 +778,8 @@ class Management:
         self.delete(uri)
         self.verbose("{0} closed".format(obj_type))
 
-    def invoke_purge(self):
-        (obj_type, uri, upload) = self.declare_delete_parse(PURGABLE)
+    def invoke_purge(self, obj_type, args):
+        (obj_type, uri, upload) = self.declare_delete_parse(PURGABLE, obj_type, args)
         self.delete(uri)
         self.verbose("{0} purged".format(obj_type))
 
