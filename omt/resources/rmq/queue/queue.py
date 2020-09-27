@@ -40,3 +40,8 @@ class Queue(Resource, CompletionMixin):
         # args = parser.parse_args(self._get_params())
 
         client.invoke_declare('queue', ['name=' + name])
+
+    def publish(self):
+        '''Message will be published to the default exchange(amq.default) with routing key queue_name, routing it to this queue.'''
+
+
