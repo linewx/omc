@@ -1,5 +1,7 @@
 import json
 
+from omt.utils.rmq_utils import build_admin_params
+
 from omt.common import CompletionMixin
 from omt.common.formater import format_list
 from omt.core import Resource
@@ -14,19 +16,12 @@ class Binding(Resource, CompletionMixin):
         self.parser.add_argument('--dest', nargs='?', type=str, help='binding destination')
         self.parser.add_argument('--type', nargs='?', type=str, help='binding destination type', default='queue')
         self.parser.add_argument('--key', nargs='?', type=str, help='binding property key')
+        self.parser.add_argument('--force', nargs='?', type=bool, help='force to delete')
 
     def _default_columns(self):
         client = self.context['common']['client']
         bindings = client.invoke_list('bindings')
         format_list(bindings, ['source', 'destination', 'routing_key'], 'table')
-
-    def _binding_list(self):
-        client = self.context['common']['client']
-        bindings = json.loads(client.invoke_list('bindings'))
-        results = [(
-                               "--binding-source %(source)s --binding-destination %(destination)s --binding-destination-type %(destination_type)s --binding-properties_key %(properties_key)s" % one,'')
-                   for one in bindings]
-        self.print_completion(results, short_mode=True)
 
     def list(self):
         client = self.context['common']['client']
@@ -35,37 +30,108 @@ class Binding(Resource, CompletionMixin):
 
     def delete(self):
         if 'completion' in self._get_params():
-            self._binding_list()
+            params = self._get_params()[:-1]
+            prompts = []
+            if not params:
+                # no params, omt rmq binding completion
+                self.print_completion(['--src', '--dest'])
+
+            elif params[-1].strip() == '--src':
+                # list all exchanges
+                client = self.context['common']['client']
+                exchanges = json.loads(client.invoke_list('exchanges'))
+                results = [(one['name'], "name is %(name)s, type is %(type)s | vhost is %(vhost)s" % one) for one in
+                           exchanges]
+                self._print_completion(results, short_mode=True)
+
+            elif params[-1].strip() == '--dest':
+                # list all queues
+                client = self.context['common']['client']
+                queues = json.loads(client.invoke_list('queues'))
+                results = [(one['name'], "auto_delete is %(auto_delete)s | vhost is %(vhost)s" % one) for one in queues]
+                self.print_completion(results, short_mode=True)
+
+            elif params[-1].strip() == '--type':
+                # list all queues
+                self.print_completion(['exchange', 'queue'], short_mode=True)
+
+            else:
+                self.print_completion(['--src', '--dest', '--type', '--key'])
             return
 
         client = self.context['common']['client']
 
         args = self.parser.parse_args(self._get_action_params())
-        if args.src is None:
-            raise Exception("binding source can not be empty")
 
-        if args.binding_destination is None:
-            raise Exception("binding destination can not be empty")
+        if args.src is None and args.dest is None and args.type is None:
+            raise Exception("src,dest and type at least one should be provided")
 
-        if args.type is None:
-            raise Exception("binding destination-type can not be empty")
+        client = self.context['common']['client']
+        bindings = json.loads(client.invoke_list('bindings'))
 
-        delete_args = ['source=' + args.src, 'destination=' + args.dest,
-                       'destination_type=' + args.type]
+        results = []
+        for one_binding in bindings:
+            if args.src:
+                if one_binding['source'] != args.src:
+                    continue
+            if args.dest:
+                if one_binding['destination'] != args.dest:
+                    continue
+            if args.type:
+                if one_binding['destination_type'] != args.type:
+                    continue
+            if args.key:
+                if one_binding['properties_key'] != args.key:
+                    continue
 
-        if args.binding_properties_key is not None:
-            delete_args.append('properties_key=' + args.binding_properties_key)
+            results.append(one_binding)
 
-        client.invoke_delete('binding', delete_args)
+        if len(results) == 0:
+            print('no items found')
+
+        if len(results) > 1 and not args.force:
+
+            print('more than 1 item found:')
+            print(results)
+            print('please narrow the filter conditions.')
+            print('or you can use --force to force to delete all the records')
+        else:
+            for one in results:
+                delete_args = build_admin_params({
+                    'source': one['source'],
+                    'destination': one['destination'],
+                    'destination_type': one['destination_type'],
+                    'properties_key': one['properties_key']
+                })
+                client.invoke_delete('binding', delete_args)
 
     def declare(self):
         if 'completion' in self._get_params():
-            params = self._get_params()
-            if len(params) == 1:
-                #no params, omt rmq binding completion
+            params = self._get_params()[:-1]
+            prompts = []
+            if not params:
+                # no params, omt rmq binding completion
                 self.print_completion(['--src', '--dest'])
 
-            # omt rmq binding declare
+            elif params[-1].strip() == '--src':
+                # list all exchanges
+                client = self.context['common']['client']
+                exchanges = json.loads(client.invoke_list('exchanges'))
+                results = [(one['name'], "name is %(name)s, type is %(type)s | vhost is %(vhost)s" % one) for one in
+                           exchanges]
+                self._print_completion(results, short_mode=True)
+
+            elif params[-1].strip() == '--dest':
+                # list all queues
+                client = self.context['common']['client']
+                queues = json.loads(client.invoke_list('queues'))
+                results = [(one['name'], "auto_delete is %(auto_delete)s | vhost is %(vhost)s" % one) for one in queues]
+                self.print_completion(results, short_mode=True)
+
+            else:
+                self.print_completion(['--src', '--dest'])
+
+            return
 
         parser = argparse.ArgumentParser('exchange declare arguments')
         parser.add_argument('--src', nargs='?', required=True, help='binding source')
@@ -74,10 +140,7 @@ class Binding(Resource, CompletionMixin):
         client = self.context['common']['client']
         args = parser.parse_args(self._get_params())
 
-        client.invoke_declare('binding', self._build_admin_params({
+        client.invoke_declare('binding', build_admin_params({
             'source': args.src,
             'destination': args.dest,
         }))
-
-    def _build_admin_params(self, params):
-        return ['='.join([k, v]) for k, v in params.items()]
