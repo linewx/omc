@@ -66,9 +66,17 @@ class Exchange(Resource):
         client.invoke_publish(build_admin_params(params))
 
     def listen(self):
+        if 'completion' in self._get_params():
+            #params = self._get_params()[:-1]
+            self._print_completion(['--queue', '--key', '--ackmode', '--count', '--period'])
+            return
+
         parser = argparse.ArgumentParser()
         parser.add_argument('--queue', nargs='?', help='queue name', default='_tmp_omt_queue')
-        parser.add_argument('--key', nargs='?', help='routing key', default='*')
+        parser.add_argument('--key', nargs='?', help='routing key', default='#')
+        parser.add_argument('--ackmode', nargs='?', help='routing key', default='ack_requeue_false')
+        parser.add_argument('--count', nargs='?', help='message bulk size', default='1')
+        parser.add_argument('--period', nargs='?', help='fetch peroid', default=5)
 
         args = parser.parse_args(self._get_params())
 
@@ -81,8 +89,7 @@ class Exchange(Resource):
         try:
 
             # create temp queue
-            client.invoke_declare('queue', ['name' + queue_name])
-
+            client.invoke_declare('queue', ['name=' + queue_name])
 
             # create binding
             client.invoke_declare('binding', build_admin_params({
@@ -91,11 +98,17 @@ class Exchange(Resource):
                 'routing_key': routing_key
             }))
 
-
             while True:
                 # fetch message periodically(no amqp support) with ui
-                messages = client.invoke_get(['queue=' + queue_name, 'count=' + '100'])
-                time.sleep(5)
+                # ['queue=' + queue_name, 'count=' + args.count])
+                messages = client.invoke_get(build_admin_params({
+                    'queue': queue_name,
+                    'count': args.count,
+                    'ackmode': args.ackmode
+                }))
+                if json.loads(messages):
+                    format_list(messages)
+                time.sleep(args.period)
         except KeyboardInterrupt:
             # delete temp queue and routing key after listen exist
             # purge message
@@ -104,7 +117,7 @@ class Exchange(Resource):
 
             # delete bindings
             print('deleting binding with source %s and destination %s' % (exchange_name, queue_name))
-            client.invoke_delete('bindings', build_admin_params({
+            client.invoke_delete('binding', build_admin_params({
                 'source': exchange_name,
                 'destination': queue_name,
                 'destination_type': 'queue',
