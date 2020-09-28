@@ -67,8 +67,11 @@ class Exchange(Resource):
 
     def listen(self):
         if 'completion' in self._get_params():
-            #params = self._get_params()[:-1]
-            self._print_completion(['--queue', '--key', '--ackmode', '--count', '--period'])
+            params = self._get_params()[:-1]
+            the_completion = ['--queue', '--key', '--ackmode', '--count', '--period']
+            if params and params[-1].strip() == '--ackmode':
+                the_completion.extend(['ack_requeue_true', 'ack_requeue_false', 'reject_requeue_true', 'reject_requeue_false'])
+            self._print_completion(the_completion)
             return
 
         parser = argparse.ArgumentParser()

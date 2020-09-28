@@ -1,5 +1,7 @@
 import argparse
 import json
+import sys
+import time
 
 from omt.utils.rmq_utils import build_admin_params
 
@@ -76,3 +78,43 @@ class Queue(Resource, CompletionMixin):
             raise Exception("no queue name provided")
         name = self._get_resource_value()[0]
         client.invoke_purge('queue', ['name=' + name])
+
+    def listen(self):
+        if 'completion' in self._get_params():
+            params = self._get_params()[:-1]
+            the_completion = ['--ackmode', '--count', '--period']
+            if params and params[-1].strip() == '--ackmode':
+                the_completion.extend(['ack_requeue_true', 'ack_requeue_false', 'reject_requeue_true', 'reject_requeue_false'])
+            self._print_completion(the_completion)
+            return
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--ackmode', nargs='?', help='routing key', default='ack_requeue_false')
+        parser.add_argument('--count', nargs='?', help='message bulk size', default='1')
+        parser.add_argument('--period', nargs='?', help='fetch peroid', default=5)
+
+        args = parser.parse_args(self._get_params())
+
+        if not self._get_resource_value():
+            raise Exception("no queue provided")
+
+        queue_name = self._get_resource_value()[0]
+
+        client = self.context['common']['client']
+
+        try:
+            print('star listening message on queue %s, press Ctrl-C to stop' % queue_name)
+            while True:
+                # fetch message periodically(no amqp support) with ui
+                # ['queue=' + queue_name, 'count=' + args.count])
+                messages = client.invoke_get(build_admin_params({
+                    'queue': queue_name,
+                    'count': args.count,
+                    'ackmode': args.ackmode
+                }))
+                if json.loads(messages):
+                    format_list(messages)
+                time.sleep(args.period)
+        except KeyboardInterrupt:
+            print('stop listening')
+            sys.exit(0)
