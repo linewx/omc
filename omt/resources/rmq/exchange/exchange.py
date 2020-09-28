@@ -66,10 +66,52 @@ class Exchange(Resource):
         client.invoke_publish(build_admin_params(params))
 
     def listen(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--queue', nargs='?', help='queue name', default='_tmp_omt_queue')
+        parser.add_argument('--key', nargs='?', help='routing key', default='*')
+
+        args = parser.parse_args(self._get_params())
+
+        queue_name = args.queue
+        routing_key = args.key
+        exchange_name = self._get_resource_value()[0] if self._have_resource_value() else 'amq.default'
+
+        client = self.context['common']['client']
+
         try:
+
+            # create temp queue
+            client.invoke_declare('queue', ['name' + queue_name])
+
+
+            # create binding
+            client.invoke_declare('binding', build_admin_params({
+                'source': exchange_name,
+                'destination': queue_name,
+                'routing_key': routing_key
+            }))
+
+
             while True:
-                print('i wake up')
+                # fetch message periodically(no amqp support) with ui
+                messages = client.invoke_get(['queue=' + queue_name, 'count=' + '100'])
                 time.sleep(5)
         except KeyboardInterrupt:
-            print("bye bye")
+            # delete temp queue and routing key after listen exist
+            # purge message
+            print('purging message on queue %s' % queue_name)
+            client.invoke_purge('queue', ['name=' + queue_name])
+
+            # delete bindings
+            print('deleting binding with source %s and destination %s' % (exchange_name, queue_name))
+            client.invoke_delete('bindings', build_admin_params({
+                'source': exchange_name,
+                'destination': queue_name,
+                'destination_type': 'queue',
+                'properties_key': routing_key
+            }))
+
+            # delete queue
+            print('deleting queue %s' % queue_name)
+            client.invoke_delete('queue', ['name=' + queue_name])
             sys.exit(0)

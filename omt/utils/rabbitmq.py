@@ -686,13 +686,14 @@ class Management:
         assert_usage(not payload_file or upload['count'] == '1',
                      'Cannot get multiple messages using payload_file')
         result = self.post(uri, json.dumps(upload))
-        if payload_file:
-            write_payload_file(payload_file, result)
-            columns = ['routing_key', 'exchange', 'message_count',
-                       'payload_bytes', 'redelivered']
-            format_list(result, columns, {}, self.options)
-        else:
-            format_list(result, [], {}, self.options)
+        return result
+        # if payload_file:
+        #     write_payload_file(payload_file, result)
+        #     columns = ['routing_key', 'exchange', 'message_count',
+        #                'payload_bytes', 'redelivered']
+        #     format_list(result, columns, {}, self.options)
+        # else:
+        #     format_list(result, [], {}, self.options)
 
     def invoke_export(self):
         path = self.get_arg()

@@ -30,7 +30,8 @@ class Queue(Resource, CompletionMixin):
         args = parser.parse_args(self._get_params())
         client = self.context['common']['client']
         queue_name = self._get_resource_value()[0]
-        client.invoke_get(['queue=' + queue_name, 'count=' + args.count])
+        messages = client.invoke_get(['queue=' + queue_name, 'count=' + args.count])
+        format_list(messages)
 
     def delete(self):
         client = self.context['common']['client']
