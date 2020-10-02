@@ -5,6 +5,8 @@ from omt.common import CmdTaskMixin
 from omt.core import Resource
 import pkg_resources
 
+from omt.utils import JmxTermUtils
+
 
 class Jmx(Resource, CmdTaskMixin):
     """
@@ -31,13 +33,12 @@ ACTION LIST
         cmd = 'echo jvms | java -jar %s -n' % jmxterm
         self.run_cmd(cmd)
 
-    def _list_resources(self):
-        jmxterm = pkg_resources.resource_filename(__name__, '../../lib/jmxterm-1.0.2-uber.jar')
-        cmd = 'echo jvms | java -jar %s -n' % jmxterm
-        result = self.run_cmd(cmd, capture_output=True, verbose=False)
-        output = result.stdout.decode("utf-8").splitlines()
-        jvms = [list(map(lambda x: str(x).strip(), str(one).split(" ", 1))) for one in output]
-        for one in jvms:
-            content = one[1] if len(one[1]) <= 100 else one[1][5:100]
+    def _completion(self, short_mode=False):
+        super()._completion(True)
 
-            print(str(one[0] + ":" + one[0] + ' ' + content))
+        if not self._have_resource_value():
+            cmd = JmxTermUtils.build_command("jvms")
+            result = self.run_cmd(cmd, capture_output=True, verbose=False)
+            output = result.stdout.decode("utf-8").splitlines()
+            jvms = [list(map(lambda x: str(x).strip(), str(one).split(" ", 1))) for one in output]
+            self._print_completion(jvms)

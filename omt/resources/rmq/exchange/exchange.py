@@ -14,7 +14,7 @@ class Exchange(Resource):
     def _completion(self, short_mode=False):
         super()._completion(True)
 
-        if not self._get_resource_value():
+        if not self._get_resource_values():
             # resource haven't filled yet
             client = self.context['common']['client']
             exchanges = json.loads(client.invoke_list('exchanges'))
@@ -29,14 +29,14 @@ class Exchange(Resource):
 
     def delete(self):
         client = self.context['common']['client']
-        name = self._get_resource_value()[0]
+        name = self._get_resource_values()[0]
         client.invoke_delete('exchange', ['name=' + name])
 
     def declare(self):
         client = self.context['common']['client']
         if not self._have_resource_value():
             raise Exception("no exchange name provided")
-        name = self._get_resource_value()[0]
+        name = self._get_resource_values()[0]
         parser = argparse.ArgumentParser('exchange declare arguments')
         parser.add_argument('--type', nargs='?', default='direct')
         args = parser.parse_args(self._get_params())
@@ -44,7 +44,7 @@ class Exchange(Resource):
 
     def publish(self):
         client = self.context['common']['client']
-        name = self._get_resource_value()[0] if self._have_resource_value() else 'amq.default'
+        name = self._get_resource_values()[0] if self._have_resource_value() else 'amq.default'
         parser = argparse.ArgumentParser()
         parser.add_argument('--routing-key', nargs='?', help='routing key')
         parser.add_argument('--payload', nargs='?', help='message payload')
@@ -85,7 +85,7 @@ class Exchange(Resource):
 
         queue_name = args.queue
         routing_key = args.key
-        exchange_name = self._get_resource_value()[0] if self._have_resource_value() else 'amq.default'
+        exchange_name = self._get_resource_values()[0] if self._have_resource_value() else 'amq.default'
 
         client = self.context['common']['client']
 
