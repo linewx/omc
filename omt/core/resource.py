@@ -112,11 +112,20 @@ class Resource:
     def _get_resource_name(self):
         return self.__class__.__name__.lower()
 
-    def _get_resource_value(self):
-        return self.context[self._get_resource_name()]
+    def _get_resource_values(self, resource_name=None):
+        resource_name = resource_name if resource_name is not None else self._get_resource_name()
+        return self.context[resource_name]
+
+    def _get_one_resource_value(self, resource_name=None, index=0):
+        resource_name = resource_name if resource_name is not None else self._get_resource_name()
+        resource_values = self._get_resource_values(resource_name)
+        if len(resource_values) <= index:
+            return None
+        else:
+            return resource_values[index]
 
     def _have_resource_value(self):
-        if self._get_resource_value():
+        if self._get_resource_values():
             return True
         else:
             return False

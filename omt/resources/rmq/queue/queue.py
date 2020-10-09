@@ -31,13 +31,13 @@ class Queue(Resource, CompletionMixin):
         parser.add_argument('--count', nargs="?", help='message count', type=str, default='100')
         args = parser.parse_args(self._get_params())
         client = self.context['common']['client']
-        queue_name = self._get_resource_value()[0]
+        queue_name = self._get_resource_values()[0]
         messages = client.invoke_get(['queue=' + queue_name, 'count=' + args.count])
         format_list(messages)
 
     def delete(self):
         client = self.context['common']['client']
-        queue_name = self._get_resource_value()[0]
+        queue_name = self._get_resource_values()[0]
         client.invoke_delete('queue', ['name=' + queue_name])
 
     def declare(self):
@@ -45,7 +45,7 @@ class Queue(Resource, CompletionMixin):
         # parser.add_argument('--type', nargs='?', default='direct')
 
         client = self.context['common']['client']
-        name = self._get_resource_value()[0]
+        name = self._get_resource_values()[0]
         # args = parser.parse_args(self._get_params())
 
         client.invoke_declare('queue', ['name=' + name])
@@ -55,7 +55,7 @@ class Queue(Resource, CompletionMixin):
         client = self.context['common']['client']
         if not self._have_resource_value():
             raise Exception("no queue name provided")
-        name = self._get_resource_value()[0]
+        name = self._get_resource_values()[0]
         parser = argparse.ArgumentParser()
         parser.add_argument('--payload', nargs='?', help='message payload')
 
@@ -76,7 +76,7 @@ class Queue(Resource, CompletionMixin):
         client = self.context['common']['client']
         if not self._have_resource_value():
             raise Exception("no queue name provided")
-        name = self._get_resource_value()[0]
+        name = self._get_resource_values()[0]
         client.invoke_purge('queue', ['name=' + name])
 
     def listen(self):
@@ -95,10 +95,10 @@ class Queue(Resource, CompletionMixin):
 
         args = parser.parse_args(self._get_params())
 
-        if not self._get_resource_value():
+        if not self._get_resource_values():
             raise Exception("no queue provided")
 
-        queue_name = self._get_resource_value()[0]
+        queue_name = self._get_resource_values()[0]
 
         client = self.context['common']['client']
 

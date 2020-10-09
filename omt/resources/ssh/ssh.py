@@ -14,7 +14,7 @@ class Ssh(Resource):
         return Session()
 
     def start(self):
-        service_name = self._get_resource_value()
+        service_name = self._get_resource_values()
         Session = sessionmaker()
         Session.configure(bind=engine)
         session = Session()

@@ -11,27 +11,32 @@ class Bean(Resource, CmdTaskMixin):
     def _run(self):
         pass
 
-    def _list_resources(self):
-        jmxterm = pkg_resources.resource_filename(__name__, '../../../lib/jmxterm-1.0.2-uber.jar')
-        jmx = self.context['jmx']
-        cmd = 'echo "open %s && beans"  | java -jar %s -n' % (jmx, jmxterm)
-        result = self.run_cmd(cmd, capture_output=True)
-        output = result.stdout.decode("utf-8").splitlines()
-        for line in output:
-            print(line.replace(":", "\:") + ":" + ' ')
+    def _completion(self, short_mode=False):
+        if self._have_resource_value():
+            super()._completion(True)
+
+        else:
+            jmx = self.context['jmx'][0] if self.context['jmx'] else ''
+            cmd = JmxTermUtils.build_command('open %s && beans' % jmx)
+            result = self.run_cmd(cmd, capture_output=True)
+            output = result.stdout.decode("utf-8").splitlines()
+            output = list(map(lambda x: x.replace(":", "\:"), output))
+            self._print_completion(output, True)
+            # for line in output:
+            #     print(line.replace(":", "\:") + ":" + ' ')
 
     def info(self):
         jmxterm = pkg_resources.resource_filename(__name__, '../../../lib/jmxterm-1.0.2-uber.jar')
         jmx = self.context['jmx']
-        bean = self._get_resource_value()
+        bean = self._get_resource_values()[0]
         bean = bean.replace(" ", "\\ ")
         cmd = 'echo "open %s && bean %s && info"  | java -jar %s -n' % (jmx, bean, jmxterm)
         self.run_cmd(cmd)
 
     def exec(self):
         if 'completion' in self._get_params():
-            jmx = self.context['jmx']
-            bean = self._get_resource_value()
+            jmx = self._get_one_resource_value('jmx')
+            bean = self._get_one_resource_value()
             bean = bean.replace(" ", "\\ ")
             short_cmd = "open %s && bean %s && info" % (jmx, bean)
             result = self.run_cmd(JmxTermUtils.build_command(short_cmd), capture_output=True, verbose=False)
@@ -40,8 +45,8 @@ class Bean(Resource, CmdTaskMixin):
                 print(one_attr['method'] + ":" + one_attr['raw_data'])
         else:
             attr_name = ' '.join(self._get_params())
-            jmx = self.context['jmx']
-            bean = self._get_resource_value()
+            jmx = self._get_one_resource_value('jmx')
+            bean = self._get_one_resource_value()
             bean = bean.replace(" ", "\\ ")
             cmd = "open %s && bean %s && run %s" %  (jmx, bean, attr_name)
             #cmd = 'echo "open %s && bean %s && set %s"  | java -jar %s -n' % (jmx, bean, attr_name, jmxterm)
@@ -50,7 +55,7 @@ class Bean(Resource, CmdTaskMixin):
     def get(self):
         if 'completion' in self._get_params():
             jmx = self.context['jmx']
-            bean = self._get_resource_value()
+            bean = self._get_resource_values()[0]
             bean = bean.replace(" ", "\\ ")
             short_cmd = "open %s && bean %s && info" % (jmx, bean)
             result = self.run_cmd(JmxTermUtils.build_command(short_cmd), capture_output=True, verbose=False)
@@ -61,16 +66,16 @@ class Bean(Resource, CmdTaskMixin):
         else:
             attr_name = ' '.join(self._get_params())
             jmxterm = pkg_resources.resource_filename(__name__, '../../../lib/jmxterm-1.0.2-uber.jar')
-            jmx = self.context['jmx']
-            bean = self._get_resource_value()
+            jmx = self._get_one_resource_value('jmx')
+            bean = self._get_one_resource_value()
             bean = bean.replace(" ", "\\ ")
             cmd = 'echo "open %s && bean %s && get %s"  | java -jar %s -n' % (jmx, bean, attr_name, jmxterm)
             self.run_cmd(cmd)
 
     def set(self):
         if 'completion' in self._get_params():
-            jmx = self.context['jmx']
-            bean = self._get_resource_value()
+            jmx = self._get_one_resource_value('jmx')
+            bean = self._get_one_resource_value()
             bean = bean.replace(" ", "\\ ")
             short_cmd = "open %s && bean %s && info" % (jmx, bean)
             result = self.run_cmd(JmxTermUtils.build_command(short_cmd), capture_output=True, verbose=False)
@@ -79,11 +84,10 @@ class Bean(Resource, CmdTaskMixin):
                 print(one_attr['attribute'] + ":" + one_attr['raw_data'])
         else:
             attr_name = ' '.join(self._get_params())
-            jmx = self.context['jmx']
-            bean = self._get_resource_value()
+            jmx = self._get_one_resource_value('jmx')
+            bean = self._get_one_resource_value()
             bean = bean.replace(" ", "\\ ")
             cmd = "open %s && bean %s && set %s" %  (jmx, bean, attr_name)
-            #cmd = 'echo "open %s && bean %s && set %s"  | java -jar %s -n' % (jmx, bean, attr_name, jmxterm)
             self.run_cmd(JmxTermUtils.build_command(cmd))
 
 
