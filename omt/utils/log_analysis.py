@@ -13,13 +13,14 @@ def log_analyze(location, keyword):
 
         for one_file in files:
             filename = os.path.join(root, one_file)
-            item = parse_one_file(filename, keyword)
-            if item is None:
+            items = parse_one_file(filename, keyword)
+            if not items:
                 continue
-            log_time, line = item
-            sort_keys = [one[0] for one in results]
-            index = bisect.bisect_left(sort_keys, log_time)
-            results.insert(index, (log_time, line, one_file, filename))
+            for item in items:
+                log_time, line = item
+                sort_keys = [one[0] for one in results]
+                index = bisect.bisect_left(sort_keys, log_time)
+                results.insert(index, (log_time, line, one_file, filename))
         # print(os.path.join(root, files[0]))
 
     for one_item in results:
@@ -43,13 +44,15 @@ def parse_one_file(filename, keyword):
 
                     if log_time is None:
                         continue
-                    return (the_log_time, line)
+                    yield (the_log_time, line)
     except Exception as r:
         pass
-        #print("can't parse file:" + filename)
+        # print("can't parse file:" + filename)
+
 
 if __name__ == '__main__':
     import sys
+
     location = sys.argv[1]
     keyword = sys.argv[2]
     log_analyze(location, keyword)
