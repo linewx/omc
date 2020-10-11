@@ -1,8 +1,10 @@
+import functools
 import os
 
 import argparse
 from omt.common import CmdTaskMixin
 from omt.config import settings
+from omt.core import simple_completion
 from omt.core.resource import Resource
 
 
@@ -31,6 +33,7 @@ class Ssh(Resource, CmdTaskMixin):
 
             self._print_completion(ssh_hosts)
 
+    @simple_completion(['--dry-run'])
     def cache(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--dry-run', action='store_true')
@@ -51,6 +54,7 @@ class Ssh(Resource, CmdTaskMixin):
         else:
             self.run_cmd(cmd)
 
+    @simple_completion(['--dry-run'])
     def exec(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--dry-run', action='store_true')
@@ -63,6 +67,7 @@ class Ssh(Resource, CmdTaskMixin):
         else:
             self.run_cmd(cmd)
 
+    @simple_completion(['-r', '--local', '--remote', '--dry-run'])
     def upload(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('-r', '--recursive', action='store_true')
@@ -79,6 +84,7 @@ class Ssh(Resource, CmdTaskMixin):
         else:
             self.run_cmd(cmd)
 
+    @simple_completion(['-r', '--local', '--remote', '--dry-run'])
     def download(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('-r', '--recursive', action='store_true')
@@ -95,6 +101,7 @@ class Ssh(Resource, CmdTaskMixin):
         else:
             self.run_cmd(cmd)
 
+    @simple_completion(['--local-port',  '--remote-port', '--remote-host', '--dry-run'])
     def tunnel(self):
         tunnel_template = "ssh -nNT -L %(local_port)s:%(remote_host)s:%(remote_port)s %(bridge)s"
         bridge = self._get_one_resource_value()
