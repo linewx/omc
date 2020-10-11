@@ -40,3 +40,7 @@ class Ssh(Resource, CmdTaskMixin):
         cmd = 'ssh %s' % ssh_host
         self.run_cmd(cmd)
 
+    def exec(self):
+        ssh_host = self._get_one_resource_value()
+        cmd = "ssh %s -C '%s'" % (ssh_host, " ".join(self._get_action_params()))
+        self.run_cmd(cmd)
