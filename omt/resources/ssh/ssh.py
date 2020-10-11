@@ -1,4 +1,6 @@
 import os
+
+import argparse
 from omt.common import CmdTaskMixin
 from omt.config import settings
 from omt.core.resource import Resource
@@ -43,4 +45,28 @@ class Ssh(Resource, CmdTaskMixin):
     def exec(self):
         ssh_host = self._get_one_resource_value()
         cmd = "ssh %s -C '%s'" % (ssh_host, " ".join(self._get_action_params()))
+        self.run_cmd(cmd)
+
+    def upload(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-r', '--recursive', action='store_true')
+        parser.add_argument('--local', nargs='?', help='local files')
+        parser.add_argument('--remote', nargs='?', help='remote files')
+
+        ssh_host = self._get_one_resource_value()
+
+        args = parser.parse_args(self._get_action_params())
+        cmd = "scp %s %s %s:%s" % ('-r' if args.recursive else '', args.local, ssh_host, args.remote)
+        self.run_cmd(cmd)
+
+    def download(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-r', '--recursive', action='store_true')
+        parser.add_argument('--local', nargs='?', help='local files')
+        parser.add_argument('--remote', nargs='?', help='remote files')
+
+        ssh_host = self._get_one_resource_value()
+
+        args = parser.parse_args(self._get_action_params())
+        cmd = "scp %s %s:%s %s" % ('-r' if args.recursive else '', ssh_host, args.remote, args.local)
         self.run_cmd(cmd)
