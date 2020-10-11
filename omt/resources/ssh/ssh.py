@@ -1,37 +1,42 @@
+import os
+from omt.common import CmdTaskMixin
+from omt.config import settings
 from omt.core.resource import Resource
-#from omt import model,engine
-from sqlalchemy.orm import sessionmaker
-import subprocess
 
-class Ssh(Resource):
+
+class Ssh(Resource, CmdTaskMixin):
     template = "ssh -nNT -L %(local_port)s:%(host)s:%(port)s %(bridge)s &"
+
     def _description(self):
         return 'SSH(Secure Shell) Smart Tool Set'
-    
-    def get_session(self):
-        Session = sessionmaker()
-        Session.configure(bind=engine)
-        return Session()
 
-    def start(self):
-        service_name = self._get_resource_values()
-        Session = sessionmaker()
-        Session.configure(bind=engine)
-        session = Session()
-        query = session.query(model.ProxyTable).filter(model.ProxyTable.service_name == service_name)
-        the_row = query.first()
-        service_cmd = Ssh.template % the_row.__dict__
-        subprocess.run(service_cmd, shell=True)
-    
-    def list(self):
-        session = self.get_session()
-        query = session.query(model.ProxyTable.service_name)
-        query_result = query.all()
-        result = [one[0] for one in query_result]
-        print(result)
-    
-    
+    def _completion(self, short_mode=True):
+        super()._completion(True)
+        if not self._have_resource_value():
+            if not os.path.exists(settings.SSH_CONFIG_FILE):
+                return
 
+            ssh_hosts = []
+            with open(settings.SSH_CONFIG_FILE) as f:
+                for one_line in f.readlines():
+                    try:
+                        one_line = one_line.strip()
+                        if one_line.startswith("Host "):
+                            hostname = one_line.replace("Host", "").strip()
+                            if hostname:
+                                ssh_hosts.append(hostname)
+                    except:
+                        pass
 
+            self._print_completion(ssh_hosts)
 
+    def cache(self):
+        ssh_host = self._get_one_resource_value()
+        cmd = "ssh-copy-id %s" % ssh_host
+        self.run_cmd(cmd)
+
+    def _run(self):
+        ssh_host = self._get_one_resource_value()
+        cmd = 'ssh %s' % ssh_host
+        self.run_cmd(cmd)
 

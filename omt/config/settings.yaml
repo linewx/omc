@@ -2,6 +2,7 @@ default:
   omt_home: "@format {env[HOME]}/.omt"
   config_dir: "@format {this.OMT_HOME}/config"
   resource_config_dir: "@format {this.CONFIG_DIR}/resources"
+  ssh_config_file: "@format {env[HOME]}/.ssh/config"
   db:
     drivername: sqlite
     database: "@format {env[OMT_HOME]}/omt.db"
