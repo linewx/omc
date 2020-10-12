@@ -10,6 +10,8 @@ import copy
 import textwrap
 
 
+
+
 class Resource:
     # todo@rain: to differentiate between the following methods:
     # __methods private methods, don't inherit in child method

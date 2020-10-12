@@ -27,8 +27,8 @@ class Bean(Resource, CmdTaskMixin):
 
     def info(self):
         jmxterm = pkg_resources.resource_filename(__name__, '../../../lib/jmxterm-1.0.2-uber.jar')
-        jmx = self.context['jmx']
-        bean = self._get_resource_values()[0]
+        jmx = self._get_one_resource_value('jmx')
+        bean = self._get_one_resource_value()
         bean = bean.replace(" ", "\\ ")
         cmd = 'echo "open %s && bean %s && info"  | java -jar %s -n' % (jmx, bean, jmxterm)
         self.run_cmd(cmd)
