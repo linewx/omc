@@ -4,7 +4,8 @@ install_requires = [
     'dynaconf[all]==2.2.3',
     'pyfiglet==0.8.post1',
     'Click==7.0',
-    'psutil'
+    'psutil',
+    'kubernetes==11.0.0'
 ]
 
 
