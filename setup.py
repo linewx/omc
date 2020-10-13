@@ -5,7 +5,9 @@ install_requires = [
     'pyfiglet==0.8.post1',
     'Click==7.0',
     'psutil',
-    'kubernetes==11.0.0'
+    'kubernetes==11.0.0',
+    'ruamel-yaml==0.15.46',
+    'prettytable==0.7.2'
 ]
 
 

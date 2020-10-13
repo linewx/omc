@@ -20,7 +20,6 @@ class K8s(Resource, CmdTaskMixin):
                 resources = os.listdir(settings.OMT_KUBE_CONFIG_DIR)
                 self._print_completion(resources, True)
 
-
     def _before_sub_resource(self):
         if self._have_resource_value():
             resource_value = self._get_one_resource_value()
@@ -39,12 +38,13 @@ class K8s(Resource, CmdTaskMixin):
 
 
 if __name__ == '__main__':
-    config.load_kube_config('/Users/luganlin/.omt/config/kube/nightly1/config')
+    config.load_kube_config()
     client = client.CoreV1Api()
-    ret = client.list_pod_for_all_namespaces(watch=False)
+    ret = client.list_service_for_all_namespaces(watch=False)
 
     # print(client.read_namespaced_pod("postgres-svc-5685d4bc7-l6j4m", 'default'))
     # print(client.read_namespaced_pod_template("postgres-svc-5685d4bc7-l6j4m", 'default'))
     # print(client.read_namspaced_event("postgres-svc-5685d4bc7-l6j4m", 'default'))
-    for i in ret.items:
-        print("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
+    print(ret)
+    # for i in ret.items:
+    #     print("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
