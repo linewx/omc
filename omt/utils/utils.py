@@ -1,5 +1,5 @@
 import functools
-
+import os
 
 def rsetattr(obj, attr, val):
     pre, _, post = attr.rpartition('.')
@@ -25,3 +25,9 @@ def omt_import(name):
         mod = __import__(components[0])
         mod = getattr(mod, comp)
     return mod
+
+
+
+def make_directory(dir):
+    if not os.path.exists(dir):
+        os.makedirs(dir)

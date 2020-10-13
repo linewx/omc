@@ -24,5 +24,7 @@ class Pod(Resource, CmdTaskMixin):
             print("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
 
     def describe(self):
+        pass
+
 
 

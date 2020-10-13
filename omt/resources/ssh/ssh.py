@@ -58,10 +58,11 @@ class Ssh(Resource, CmdTaskMixin):
     def exec(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--dry-run', action='store_true')
+        parser.add_argument('cmd', nargs='*')
         args = parser.parse_args(self._get_action_params())
 
         ssh_host = self._get_one_resource_value()
-        cmd = "ssh %s -C '%s'" % (ssh_host, " ".join(self._get_action_params()))
+        cmd = "ssh %s -C '%s'" % (ssh_host, " ".join(args.cmd))
         if args.dry_run:
             print(cmd)
         else:
@@ -84,7 +85,7 @@ class Ssh(Resource, CmdTaskMixin):
         else:
             self.run_cmd(cmd)
 
-    @simple_completion(['-r', '--local', '--remote', '--dry-run'])
+    @simple_completion(['-r', '--local', '--remote', '--recursive', '--dry-run'])
     def download(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('-r', '--recursive', action='store_true')
