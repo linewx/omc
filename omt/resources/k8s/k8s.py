@@ -25,13 +25,16 @@ class K8s(Resource, CmdTaskMixin):
             resource_value = self._get_one_resource_value()
 
             config.load_kube_config(os.path.join(settings.OMT_KUBE_CONFIG_DIR, resource_value, 'config'))
-            v1 = client.CoreV1Api()
+            # v1 = client.CoreV1Api()
+            v1 = client.AppsV1Api()
+
             self.context['common'] = {
                 'client': v1
             }
         else:
             config.load_kube_config()
-            v1 = client.CoreV1Api()
+            # v1 = client.CoreV1Api()
+            v1 = client.AppsV1Api()
             self.context['common'] = {
                 'client': v1
             }
@@ -39,7 +42,7 @@ class K8s(Resource, CmdTaskMixin):
 
 if __name__ == '__main__':
     config.load_kube_config()
-    client = client.CoreV1Api()
+    client = client.AppsV1Api()
     ret = client.list_service_for_all_namespaces(watch=False)
 
     # print(client.read_namespaced_pod("postgres-svc-5685d4bc7-l6j4m", 'default'))
