@@ -13,6 +13,14 @@ class K8s(Resource, CmdTaskMixin):
     def _description(self):
         return 'The Kubernetes command-line tool'
 
+    def _completion(self, short_mode=True):
+        super()._completion(True)
+        if not self._have_resource_value():
+            if os.path.exists(settings.OMT_KUBE_CONFIG_DIR):
+                resources = os.listdir(settings.OMT_KUBE_CONFIG_DIR)
+                self._print_completion(resources, True)
+
+
     def _before_sub_resource(self):
         if self._have_resource_value():
             resource_value = self._get_one_resource_value()
