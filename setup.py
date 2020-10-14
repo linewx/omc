@@ -6,7 +6,7 @@ install_requires = [
     'Click==7.0',
     'psutil',
     'kubernetes==11.0.0',
-    'ruamel-yaml==0.15.46',
+    'ruamel.yaml==0.16.12',
     'prettytable==0.7.2'
 ]
 

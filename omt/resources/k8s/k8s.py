@@ -21,23 +21,27 @@ class K8s(Resource, CmdTaskMixin):
                 self._print_completion(resources, True)
 
     def _before_sub_resource(self):
-        if self._have_resource_value():
-            resource_value = self._get_one_resource_value()
+        try:
+            if self._have_resource_value():
+                resource_value = self._get_one_resource_value()
 
-            config.load_kube_config(os.path.join(settings.OMT_KUBE_CONFIG_DIR, resource_value, 'config'))
-            # v1 = client.CoreV1Api()
-            v1 = client.AppsV1Api()
+                config.load_kube_config(os.path.join(settings.OMT_KUBE_CONFIG_DIR, resource_value, 'config'))
+                # v1 = client.CoreV1Api()
+                v1 = client.AppsV1Api()
 
-            self.context['common'] = {
-                'client': v1
-            }
-        else:
-            config.load_kube_config()
-            # v1 = client.CoreV1Api()
-            v1 = client.AppsV1Api()
-            self.context['common'] = {
-                'client': v1
-            }
+                self.context['common'] = {
+                    'client': v1
+                }
+            else:
+                config.load_kube_config()
+                # v1 = client.CoreV1Api()
+                v1 = client.AppsV1Api()
+                self.context['common'] = {
+                    'client': v1
+                }
+        except:
+            # some action no need to create load config, get config action e.g.
+            pass
 
 
 if __name__ == '__main__':
