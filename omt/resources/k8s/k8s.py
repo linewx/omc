@@ -8,6 +8,8 @@ from omt.core import simple_completion
 from omt.core.resource import Resource
 from kubernetes import client, config
 
+from omt.utils.k8s_utils import KubernetesClient
+
 
 class K8s(Resource, CmdTaskMixin):
     def _description(self):
@@ -24,21 +26,13 @@ class K8s(Resource, CmdTaskMixin):
         try:
             if self._have_resource_value():
                 resource_value = self._get_one_resource_value()
-
-                config.load_kube_config(os.path.join(settings.OMT_KUBE_CONFIG_DIR, resource_value, 'config'))
-                # v1 = client.CoreV1Api()
-                v1 = client.AppsV1Api()
-
-                self.context['common'] = {
-                    'client': v1
-                }
+                client = KubernetesClient(os.path.join(settings.OMT_KUBE_CONFIG_DIR, resource_value, 'config'))
             else:
-                config.load_kube_config()
-                # v1 = client.CoreV1Api()
-                v1 = client.AppsV1Api()
-                self.context['common'] = {
-                    'client': v1
-                }
+                client = KubernetesClient()
+
+            self.context['common'] = {
+                'client': client
+            }
         except:
             # some action no need to create load config, get config action e.g.
             pass
