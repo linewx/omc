@@ -39,8 +39,7 @@ class K8s(Resource, CmdTaskMixin):
 
 
 if __name__ == '__main__':
-    config.load_kube_config()
-    client = client.AppsV1Api()
+    client = KubernetesClient()
     ret = client.list_service_for_all_namespaces(watch=False)
 
     # print(client.read_namespaced_pod("postgres-svc-5685d4bc7-l6j4m", 'default'))

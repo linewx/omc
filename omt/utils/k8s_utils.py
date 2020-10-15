@@ -2,7 +2,7 @@ from kubernetes import client, config
 
 
 class KubernetesClient:
-    def __init__(self, config_file):
+    def __init__(self, config_file=None):
         if not config_file:
             config.load_kube_config()
         else:
