@@ -11,7 +11,7 @@ from kubernetes import client, config
 from omt.utils.k8s_utils import KubernetesClient
 
 
-class K8s(Resource, CmdTaskMixin):
+class Kubernetes(Resource, CmdTaskMixin):
     def _description(self):
         return 'The Kubernetes command-line tool'
 

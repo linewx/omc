@@ -21,19 +21,20 @@ class Service(Resource, CmdTaskMixin):
     def list(self):
         client = self.context['common']['client']
         ret = client.list_service_for_all_namespaces(watch=False)
-        table = PrettyTable()
-        table.field_names = ['NAMESPACE', 'NAME', 'TYPE', 'CLUSTER IP', 'PORT']
-        for i in ret.items:
-            ports = []
-            if i.spec.type == 'NodePort':
-                for one_port_info in i.spec.ports:
-                    ports.append("%s:%s/%s" % (one_port_info.port, one_port_info.node_port, one_port_info.protocol))
-            else:
-                for one_port_info in i.spec.ports:
-                    ports.append("%s/%s" % (one_port_info.port, one_port_info.protocol))
-
-            table.add_row((i.metadata.namespace, i.metadata.name, i.spec.type, i.spec.cluster_ip, ','.join(ports)))
-        print(table)
+        print(ret)
+        # table = PrettyTable()
+        # table.field_names = ['NAMESPACE', 'NAME', 'TYPE', 'CLUSTER IP', 'PORT']
+        # for i in ret.items:
+        #     ports = []
+        #     if i.spec.type == 'NodePort':
+        #         for one_port_info in i.spec.ports:
+        #             ports.append("%s:%s/%s" % (one_port_info.port, one_port_info.node_port, one_port_info.protocol))
+        #     else:
+        #         for one_port_info in i.spec.ports:
+        #             ports.append("%s/%s" % (one_port_info.port, one_port_info.protocol))
+        #
+        #     table.add_row((i.metadata.namespace, i.metadata.name, i.spec.type, i.spec.cluster_ip, ','.join(ports)))
+        # print(table)
 
     def describe(self):
         pass

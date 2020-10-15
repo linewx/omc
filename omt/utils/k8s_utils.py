@@ -10,7 +10,8 @@ class KubernetesClient:
 
         corev1api = client.CoreV1Api()
         appsv1api = client.AppsV1Api()
-        self.client_instances = [corev1api, appsv1api]
+        extensionsv1beta1api = client.ExtensionsV1beta1Api()
+        self.client_instances = [corev1api, appsv1api, extensionsv1beta1api]
 
     def __getattr__(self, item):
         for one_instance in self.client_instances:
