@@ -3,12 +3,19 @@ import json
 import os
 
 import argparse
+from datetime import datetime
+
 from omt.common import CmdTaskMixin
 from omt.config import settings
 from omt.core import simple_completion
 from omt.core.resource import Resource
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
+
+
+def dateconverter(o):
+    if isinstance(o, datetime):
+        return o.__str__()
 
 
 class Pod(Resource, CmdTaskMixin):
@@ -46,8 +53,5 @@ class Pod(Resource, CmdTaskMixin):
         pod = self._get_one_resource_value()
         namespace = self.client.get_namespace('pod', pod)
         result = self.client.read_namespaced_pod(pod, namespace)
-        stream = StringIO()
         the_result = result.to_dict()
-        print(the_result)
-
-
+        print(json.dumps(the_result, default=dateconverter, indent=4))
