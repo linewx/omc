@@ -1,4 +1,5 @@
 import functools
+import json
 import os
 
 import argparse
@@ -41,6 +42,12 @@ class Pod(Resource, CmdTaskMixin):
         yaml.dump(the_result, stream)
         print(stream.getvalue())
 
-
+    def json(self):
+        pod = self._get_one_resource_value()
+        namespace = self.client.get_namespace('pod', pod)
+        result = self.client.read_namespaced_pod(pod, namespace)
+        stream = StringIO()
+        the_result = result.to_dict()
+        print(the_result)
 
 
