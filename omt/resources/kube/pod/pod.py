@@ -12,7 +12,7 @@ from omt.core.resource import Resource
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
 
-from omt.utils.utils import get_obj_value
+from omt.utils.utils import get_obj_value, get_all_dict_Keys
 
 
 def dateconverter(o):
@@ -90,6 +90,15 @@ class Pod(Resource, CmdTaskMixin):
         print(self.client.list_namespaced_event(namespace, field_selector=self._build_field_selector(the_selector)))
 
     def get(self):
+        if 'completion' in self._get_params():
+            pod = self._get_one_resource_value()
+            namespace = self.client.get_namespace('pod', pod)
+            result = self.client.read_namespaced_pod(pod, namespace)
+            prompts = []
+            get_all_dict_Keys(result.to_dict(), prompts)
+            self._print_completion(prompts)
+            return
+
         pod = self._get_one_resource_value()
         namespace = self.client.get_namespace('pod', pod)
         result = self.client.read_namespaced_pod(pod, namespace)
