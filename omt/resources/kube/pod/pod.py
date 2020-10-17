@@ -12,6 +12,8 @@ from omt.core.resource import Resource
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
 
+from omt.utils.utils import get_obj_value
+
 
 def dateconverter(o):
     if isinstance(o, datetime):
@@ -55,3 +57,47 @@ class Pod(Resource, CmdTaskMixin):
         result = self.client.read_namespaced_pod(pod, namespace)
         the_result = result.to_dict()
         print(json.dumps(the_result, default=dateconverter, indent=4))
+
+
+    @staticmethod
+    def _build_field_selector(selectors):
+        return ','.join(['%s=%s' % (k,v) for (k,v) in selectors.items()])
+
+    def namespace(self):
+        pod = self._get_one_resource_value()
+        namespace = self.client.get_namespace('pod', pod)
+        print(namespace)
+
+    def event(self):
+        # https://kubernetes.docker.internal:6443/api/v1/namespaces/default/events?fieldSelector=
+        # involvedObject.uid=4bb31f4d-99f1-4acc-a024-8e2484573733,
+        # involvedObject.name=itom-xruntime-rabbitmq-6464654786-vnjxz,
+        # involvedObject.namespace=default
+
+        pod = self._get_one_resource_value()
+        namespace = self.client.get_namespace('pod', pod)
+        result = self.client.read_namespaced_pod(pod, namespace)
+
+        uid = get_obj_value(result, 'metadata.uid')
+        name = get_obj_value(result, 'metadata.name')
+
+        the_selector = {
+            "involvedObject.uid": uid,
+            "involvedObject.namespace": namespace,
+            "involvedObject.name": name,
+        }
+
+        print(self.client.list_namespaced_event(namespace, field_selector=self._build_field_selector(the_selector)))
+
+    def get(self):
+        pod = self._get_one_resource_value()
+        namespace = self.client.get_namespace('pod', pod)
+        result = self.client.read_namespaced_pod(pod, namespace)
+        params = self._get_action_params()
+
+        the_params = " ".join(params)
+
+        if not the_params.strip():
+            print(result)
+        else:
+            print(get_obj_value(result, the_params))

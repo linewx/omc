@@ -10,7 +10,7 @@ from omt.utils import file_utils
 
 class Config(Resource, CmdTaskMixin):
     def get(self):
-        k8s_resource = self._get_one_resource_value('k8s')
+        k8s_resource = self._get_one_resource_value('kube')
         kube_config_dir = settings.OMT_KUBE_CONFIG_DIR
 
         the_kube_config_dir = os.path.join(kube_config_dir, k8s_resource)
