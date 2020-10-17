@@ -37,6 +37,38 @@ def get_obj_value2(obj, key):
     return functools.reduce(lambda x, y: getattr(x, y), key.split('.'), obj)
 
 
+def delete_obj_key(obj, key):
+    if not key:
+        return None
+
+    first_attr, others = extract_first_attr(key)
+
+    if not others:
+        # do set value
+
+        if first_attr:
+            if isinstance(obj, dict):
+                # obj.pop(key, None)
+                del obj[key]
+            elif isinstance(obj, list):
+                del obj[int(first_attr)]
+            else:
+                delattr(obj, first_attr)
+
+            return
+    else:
+        # do get value
+
+        if first_attr:
+            if isinstance(obj, dict):
+                first_value = obj.get(first_attr)
+            elif isinstance(obj, list):
+                first_value = obj[int(first_attr)]
+            else:
+                first_value = getattr(obj, first_attr)
+
+            delete_obj_key(first_value, others)
+
 def set_obj_value(obj, key, value):
     # e.g. get pod.data.ips[0]
     if not key:
@@ -120,7 +152,7 @@ if __name__ == '__main__':
 
     obj = json.loads('{"a":"a", "b": [{"e": "sdfsdf"}, "d"]}')
     set_obj_value(obj, 'b[0].e', 'test')
-
+    delete_obj_key(obj, 'b[0].e')
     print(obj)
     print(get_obj_value(obj, 'b[0].e'))
 
