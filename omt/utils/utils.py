@@ -37,6 +37,39 @@ def get_obj_value2(obj, key):
     return functools.reduce(lambda x, y: getattr(x, y), key.split('.'), obj)
 
 
+def set_obj_value(obj, key, value):
+    # e.g. get pod.data.ips[0]
+    if not key:
+        return None
+
+    first_attr, others = extract_first_attr(key)
+
+    if not others:
+        # do set value
+
+        if first_attr:
+            if isinstance(obj, dict):
+                obj[first_attr] = value
+            elif isinstance(obj, list):
+                obj[int(first_attr)] = value
+            else:
+                setattr(obj, first_attr, value)
+
+            return
+    else:
+        # do get value
+
+        if first_attr:
+            if isinstance(obj, dict):
+                first_value = obj.get(first_attr)
+            elif isinstance(obj, list):
+                first_value = obj[int(first_attr)]
+            else:
+                first_value = getattr(obj, first_attr)
+
+            set_obj_value(first_value, others, value)
+
+
 def get_obj_value(obj, key):
     # e.g. get pod.data.ips[0]
     if not key:
@@ -86,7 +119,11 @@ if __name__ == '__main__':
     import json
 
     obj = json.loads('{"a":"a", "b": [{"e": "sdfsdf"}, "d"]}')
+    set_obj_value(obj, 'b[0].e', 'test')
+
+    print(obj)
     print(get_obj_value(obj, 'b[0].e'))
+
 
     paths = []
     get_all_dict_Keys(obj, paths)
