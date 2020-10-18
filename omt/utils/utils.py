@@ -69,6 +69,7 @@ def delete_obj_key(obj, key):
 
             delete_obj_key(first_value, others)
 
+
 def set_obj_value(obj, key, value):
     # e.g. get pod.data.ips[0]
     if not key:
@@ -155,7 +156,6 @@ if __name__ == '__main__':
     delete_obj_key(obj, 'b[0].e')
     print(obj)
     print(get_obj_value(obj, 'b[0].e'))
-
 
     paths = []
     get_all_dict_Keys(obj, paths)

@@ -1,6 +1,7 @@
 import pkg_resources
 from urllib.parse import urlparse
 
+
 class JmxTermUtils:
     @staticmethod
     def build_command(command):
@@ -36,4 +37,3 @@ class UrlUtils:
 
     def get_port(self):
         return self.parsed_result.port
-

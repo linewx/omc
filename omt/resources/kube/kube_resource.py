@@ -6,7 +6,7 @@ from ruamel.yaml.compat import StringIO
 
 from omt.common import CmdTaskMixin
 from omt.core.resource import Resource
-from omt.utils.utils import get_obj_value, get_all_dict_Keys
+from omt.utils.utils import get_obj_value, get_all_dict_Keys, set_obj_value
 
 
 def dateconverter(o):
@@ -108,3 +108,23 @@ class KubeResource(Resource, CmdTaskMixin):
             print(result)
         else:
             print(get_obj_value(result, the_params))
+
+    def set(self):
+        if 'completion' in self._get_params():
+            resource = self._get_one_resource_value()
+            namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
+            result = self._read_namespaced_resource(resource, namespace)
+            prompts = []
+            get_all_dict_Keys(result.to_dict(), prompts)
+            self._print_completion(prompts)
+            return
+
+        resource = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
+        result = self._read_namespaced_resource(resource, namespace)
+        params = self._get_action_params()
+        config_key = params[0]
+        config_value = params[1]
+
+        set_obj_value(result, config_key,  config_value)
+        print(result)
