@@ -26,15 +26,19 @@ class KubeResource(Resource, CmdTaskMixin):
         read_func = getattr(self.client, 'read_namespaced_' + self._get_kube_resource_type())
         return read_func(name, namespace)
 
+    def _list_resource_for_all_namespaces(self):
+        list_func = getattr(self.client, 'list_%s_for_all_namespaces' % self._get_kube_resource_type())
+        return list_func()
+
     def _completion(self, short_mode=True):
         super()._completion(True)
 
         if not self._have_resource_value():
-            ret = self.client.list_resource_for_all_namespaces(watch=False)
+            ret = self._list_resource_for_all_namespaces()
             self._print_completion([one.metadata.name for one in ret.items], True)
 
     def list(self):
-        ret = self.client.list_resource_for_all_namespaces(watch=False)
+        ret = self._list_resource_for_all_namespaces()
         print(ret)
 
     def describe(self):
@@ -125,6 +129,10 @@ class KubeResource(Resource, CmdTaskMixin):
         params = self._get_action_params()
         config_key = params[0]
         config_value = params[1]
-
+        orig_value = get_obj_value(result, config_key)
+        # convert type
+        config_value = type(orig_value)(config_value)
         set_obj_value(result, config_key,  config_value)
-        print(result)
+
+        new_result = self.client.replace_namespaced_deployment(resource, namespace, result)
+        print(get_obj_value(new_result, config_key))
