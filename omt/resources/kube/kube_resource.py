@@ -25,9 +25,9 @@ class KubeResource(Resource, CmdTaskMixin):
     def _get_kube_resource_type(self):
         return self._get_resource_name()
 
-    def _read_namespaced_resource(self, name, namespace):
+    def _read_namespaced_resource(self, name, namespace, **kwargs):
         read_func = getattr(self.client, 'read_namespaced_' + self._get_kube_resource_type())
-        return read_func(name, namespace)
+        return read_func(name, namespace, **kwargs)
 
     def _list_resource_for_all_namespaces(self):
         list_func = getattr(self.client, 'list_%s_for_all_namespaces' % self._get_kube_resource_type())
@@ -177,8 +177,13 @@ class KubeResource(Resource, CmdTaskMixin):
         cache_folder = os.path.join(settings.OMT_KUBE_CACHE_DIR, kube_instance, namespace,
                                     self._get_kube_resource_type())
 
+        result = self._read_namespaced_resource(resource_name, namespace)
+        stream = StringIO()
+        the_result = result.to_dict()
+        yaml = YAML()
+        yaml.dump(the_result, stream)
+        content = stream.getvalue()
 
-        content = self.client.get(self._get_kube_resource_type(), resource_name, namespace)
         make_directory(cache_folder)
         with open(os.path.join(cache_folder, resource_name + '.yaml'), 'w') as f:
             f.write(content)
