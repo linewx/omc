@@ -1,12 +1,15 @@
 from kubernetes import client, config
+from omt.common import CmdTaskMixin
 
 
-class KubernetesClient:
+class KubernetesClient(CmdTaskMixin):
     def __init__(self, config_file=None):
         if not config_file:
             config.load_kube_config()
         else:
             config.load_kube_config(config_file)
+
+        self.config_file = config_file
 
         corev1api = client.CoreV1Api()
         appsv1api = client.AppsV1Api()
@@ -25,13 +28,32 @@ class KubernetesClient:
             if one.metadata.name == resource_name:
                 return one.metadata.namespace
 
-    def apply(self):
+    def apply(self, file):
         # todo: since apply not supported, need to impl
 
         # option1: using kubectl instead
         # option2: upgrade k8s version to support server-side apply
         # option3: implemented in client side myself
+        config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
+
+        cmd = "kubectl %(config)s apply -f %(file)s" % locals()
+        result = self.run_cmd(cmd)
+
+    def edit(self, resource_type: str, resource_name: str, namespace: str):
+        config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
+        self.run_cmd("kubectl %(config)s edit %(resource_type)s %(resource_name)s --namespace %(namespace)s" % locals())
+
+    def portforward(self):
         pass
+
+    def get(self, resource_type, resource_name, namespace: str, output='yaml'):
+        config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
+
+        result = self.run_cmd(
+            "kubectl %(config)s get %(resource_type)s %(resource_name)s --namespace %(namespace)s -o %(output)s" % locals(),
+            capture_output=True, verbose=False)
+        return result.stdout.decode("utf-8")
+
 
 
 if __name__ == '__main__':

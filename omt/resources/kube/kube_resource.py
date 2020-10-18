@@ -1,11 +1,14 @@
 import json
+import os
 from datetime import datetime
 
+from omt.config import settings
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
 
 from omt.common import CmdTaskMixin
 from omt.core.resource import Resource
+from omt.utils.file_utils import make_directory
 from omt.utils.utils import get_obj_value, get_all_dict_Keys, set_obj_value, delete_obj_key
 
 
@@ -132,12 +135,11 @@ class KubeResource(Resource, CmdTaskMixin):
         orig_value = get_obj_value(result, config_key)
         # convert type
         config_value = type(orig_value)(config_value)
-        set_obj_value(result, config_key,  config_value)
+        set_obj_value(result, config_key, config_value)
 
-        #todo: use apply instead once apply provided
+        # todo: use apply instead once apply provided
         new_result = self.client.replace_namespaced_deployment(resource, namespace, result)
         print(get_obj_value(new_result, config_key))
-
 
     def delete(self):
         if 'completion' in self._get_params():
@@ -157,5 +159,45 @@ class KubeResource(Resource, CmdTaskMixin):
         # convert type
         delete_obj_key(result, config_key)
 
-        #todo: use apply instead once apply provided
+        # todo: use apply instead once apply provided
         new_result = self.client.replace_namespaced_deployment(resource, namespace, result)
+
+    def edit(self):
+        resource = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
+
+        self.client.edit(self._get_kube_resource_type(), resource, namespace)
+
+    def save(self):
+        resource_name = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+        kube_instance = self._get_one_resource_value("kube")
+        if not kube_instance:
+            kube_instance = 'local'
+        cache_folder = os.path.join(settings.OMT_KUBE_CACHE_DIR, kube_instance, namespace,
+                                    self._get_kube_resource_type())
+
+
+        content = self.client.get(self._get_kube_resource_type(), resource_name, namespace)
+        make_directory(cache_folder)
+        with open(os.path.join(cache_folder, resource_name + '.yaml'), 'w') as f:
+            f.write(content)
+
+    def restore(self):
+        resource_name = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+        kube_instance = self._get_one_resource_value("kube")
+        if not kube_instance:
+            kube_instance = 'local'
+        cache_folder = os.path.join(settings.OMT_KUBE_CACHE_DIR, kube_instance, namespace,
+                                    self._get_kube_resource_type())
+        make_directory(cache_folder)
+
+        config_file = os.path.join(cache_folder, resource_name + '.yaml')
+        if os.path.exists(config_file):
+            self.client.apply(config_file)
+        else:
+            raise Exception("no config file found")
+
+        def restore(self):
+            pass
