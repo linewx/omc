@@ -1,5 +1,5 @@
 from omt.resources.kube.kube_resource import KubeResource
 
 
-class Endpoint(KubeResource):
+class Endpoints(KubeResource):
     pass
