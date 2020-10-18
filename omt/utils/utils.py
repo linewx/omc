@@ -53,7 +53,10 @@ def delete_obj_key(obj, key):
             elif isinstance(obj, list):
                 del obj[int(first_attr)]
             else:
-                delattr(obj, first_attr)
+                try:
+                    delattr(obj, first_attr)
+                except:
+                    setattr(obj, first_attr, None)
 
             return
     else:

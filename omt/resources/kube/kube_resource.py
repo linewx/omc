@@ -6,7 +6,7 @@ from ruamel.yaml.compat import StringIO
 
 from omt.common import CmdTaskMixin
 from omt.core.resource import Resource
-from omt.utils.utils import get_obj_value, get_all_dict_Keys, set_obj_value
+from omt.utils.utils import get_obj_value, get_all_dict_Keys, set_obj_value, delete_obj_key
 
 
 def dateconverter(o):
@@ -134,5 +134,28 @@ class KubeResource(Resource, CmdTaskMixin):
         config_value = type(orig_value)(config_value)
         set_obj_value(result, config_key,  config_value)
 
+        #todo: use apply instead once apply provided
         new_result = self.client.replace_namespaced_deployment(resource, namespace, result)
         print(get_obj_value(new_result, config_key))
+
+
+    def delete(self):
+        if 'completion' in self._get_params():
+            resource = self._get_one_resource_value()
+            namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
+            result = self._read_namespaced_resource(resource, namespace)
+            prompts = []
+            get_all_dict_Keys(result.to_dict(), prompts)
+            self._print_completion(prompts)
+            return
+
+        resource = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
+        result = self._read_namespaced_resource(resource, namespace)
+        params = self._get_action_params()
+        config_key = params[0]
+        # convert type
+        delete_obj_key(result, config_key)
+
+        #todo: use apply instead once apply provided
+        new_result = self.client.replace_namespaced_deployment(resource, namespace, result)

@@ -25,6 +25,14 @@ class KubernetesClient:
             if one.metadata.name == resource_name:
                 return one.metadata.namespace
 
+    def apply(self):
+        # todo: since apply not supported, need to impl
+
+        # option1: using kubectl instead
+        # option2: upgrade k8s version to support server-side apply
+        # option3: implemented in client side myself
+        pass
+
 
 if __name__ == '__main__':
     client = KubernetesClient("~/.omt/config/kube/nightly1/config")
