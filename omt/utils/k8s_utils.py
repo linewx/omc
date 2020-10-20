@@ -54,20 +54,23 @@ class KubernetesClient(CmdTaskMixin):
             capture_output=True, verbose=False)
         return result.stdout.decode("utf-8")
 
-    def download(self, resource_name, namespace, local_dir, remote_dir):
+    def download(self, resource_name, namespace, local_dir, remote_dir, container=None):
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
-        cmd = "kubectl %(config)s cp %(namespace)s/%(resource_name)s:%(remote_dir)s %(local_dir)s" % locals()
+        container_options = '' if not container else '-c ' + container
+        cmd = "kubectl %(config)s cp %(container_options)s %(namespace)s/%(resource_name)s:%(remote_dir)s %(local_dir)s" % locals()
         self.run_cmd(cmd)
 
-    def upload(self, resource_name, namespace, local_dir, remote_dir):
+    def upload(self, resource_name, namespace, local_dir, remote_dir, container=None):
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
-        cmd = "kubectl %(config)s cp %(local_dir)s %(namespace)s/%(resource_name)s:%(remote_dir)s" % locals()
+        container_options = '' if not container else '-c ' + container
+        cmd = "kubectl %(config)s cp %(container_options)s %(local_dir)s %(namespace)s/%(resource_name)s:%(remote_dir)s" % locals()
         self.run_cmd(cmd)
 
     def exec(self, resource_type, resource_name, namespace, command, container=None, stdin=True):
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
         interactive_option = '-it' if stdin else ''
-        cmd = 'kubectl %(config)s exec %(interactive_option)s %(resource_type)s/%(resource_name)s --namespace %(namespace)s -- %(command)s' % locals()
+        container_options = '' if not container else '-c ' + container
+        cmd = 'kubectl %(config)s exec %(interactive_option)s %(resource_type)s/%(resource_name)s %(container_options)s --namespace %(namespace)s -- %(command)s' % locals()
         self.run_cmd(cmd)
 
 
