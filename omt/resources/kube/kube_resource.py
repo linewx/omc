@@ -177,9 +177,11 @@ class KubeResource(Resource, CmdTaskMixin):
         cache_folder = os.path.join(settings.OMT_KUBE_CACHE_DIR, kube_instance, namespace,
                                     self._get_kube_resource_type())
 
-        result = self._read_namespaced_resource(resource_name, namespace)
+        result = self._read_namespaced_resource(resource_name, namespace, _preload_content=False)
         stream = StringIO()
-        the_result = result.to_dict()
+        the_result = json.loads(result.data.decode('UTF-8'))
+        delete_obj_key(the_result, 'metadata.creationTimestamp')
+        delete_obj_key(the_result, 'metadata.resourceVersion')
         yaml = YAML()
         yaml.dump(the_result, stream)
         content = stream.getvalue()

@@ -54,6 +54,23 @@ class KubernetesClient(CmdTaskMixin):
             capture_output=True, verbose=False)
         return result.stdout.decode("utf-8")
 
+    def download(self, resource_name, namespace, local_dir, remote_dir):
+        config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
+        cmd = "kubectl %(config)s cp %(namespace)s/%(resource_name)s:%(remote_dir)s %(local_dir)s" % locals()
+        self.run_cmd(cmd)
+
+    def upload(self, resource_name, namespace, local_dir, remote_dir):
+        config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
+        cmd = "kubectl %(config)s cp %(local_dir)s %(namespace)s/%(resource_name)s:%(remote_dir)s" % locals()
+        self.run_cmd(cmd)
+
+    def exec_cmd(self, resource_type, resource_name, namespace, command, container=None, interactive=False):
+        config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
+        interactive_option = '-i' if interactive else ''
+        cmd = 'kubectl %(config)s exec %(interactive_option)s --namespace %(namespace)s -- %(command)s' % locals()
+        self.run_cmd(cmd)
+
+
 
 
 if __name__ == '__main__':
