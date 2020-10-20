@@ -10,8 +10,6 @@ import copy
 import textwrap
 
 
-
-
 class Resource:
     # todo@rain: to differentiate between the following methods:
     # __methods private methods, don't inherit in child method
@@ -166,6 +164,20 @@ class Resource:
                         print(one[0])
                 else:
                     print(one)
+
+    def _get_completion(self, descriptions, short_mode=False):
+        result = []
+        if type(descriptions) == list:
+            for one in descriptions:
+                if type(one) == tuple or type(one) == list:
+                    if not short_mode:
+                        result.append(":".join(one))
+                    else:
+                        result.append(one[0])
+                else:
+                    result.append(one)
+        return "\n".join(result)
+
 
     def _get_public_method_completion(self):
         public_methods = self._get_public_methods()
