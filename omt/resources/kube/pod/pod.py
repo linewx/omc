@@ -1,21 +1,27 @@
-import functools
-import json
-import os
-
 import argparse
-from datetime import datetime
 
 from omt.resources.kube.kube_resource import KubeResource
-
-from omt.common import CmdTaskMixin
-from omt.config import settings
-from omt.core import simple_completion
-from omt.core.resource import Resource
-from ruamel.yaml import YAML
-from ruamel.yaml.compat import StringIO
-
-from omt.utils.utils import get_obj_value, get_all_dict_Keys
 
 
 class Pod(KubeResource):
     pass
+
+    def download(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--local', help='local dir')
+        parser.add_argument('--remote', help='remote dir')
+        args = parser.parse_args(self._get_action_params())
+
+        resource_name = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+        self.client.download(resource_name, namespace, args.local, args.remote)
+
+    def upload(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--local', help='local dir')
+        parser.add_argument('--remote', help='remote dir')
+        args = parser.parse_args(self._get_action_params())
+
+        resource_name = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+        self.client.upload(resource_name, namespace, args.local, args.remote)
