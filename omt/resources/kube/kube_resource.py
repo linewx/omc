@@ -41,8 +41,13 @@ class KubeResource(Resource, CmdTaskMixin):
             self._print_completion([one.metadata.name for one in ret.items], True)
 
     def list(self):
-        ret = self._list_resource_for_all_namespaces()
-        print(ret)
+        resource_name = self._get_one_resource_value()
+        namespace = 'all' if not resource_name else self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+
+        # ret = self._list_resource_for_all_namespaces()
+        # print(ret)
+        result = self.client.get(self._get_kube_resource_type(), resource_name, namespace)
+        print(result)
 
     def describe(self):
         pass
@@ -211,3 +216,11 @@ class KubeResource(Resource, CmdTaskMixin):
         namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
 
         self.client.exec(self._get_kube_resource_type(), resource_name, namespace, " ".join(self._get_action_params()))
+
+    def describe(self):
+        resource_name = self._get_one_resource_value()
+        namespace = 'all'
+        if resource_name:
+            namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+
+        print(self.client.describe(self._get_kube_resource_type(), resource_name, namespace))

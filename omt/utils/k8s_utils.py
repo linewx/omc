@@ -28,6 +28,10 @@ class KubernetesClient(CmdTaskMixin):
             if one.metadata.name == resource_name:
                 return one.metadata.namespace
 
+    ##################################
+    ###### kubectl impl ##############
+    ##################################
+
     def apply(self, file):
         # todo: since apply not supported, need to impl
 
@@ -45,14 +49,6 @@ class KubernetesClient(CmdTaskMixin):
 
     def portforward(self):
         pass
-
-    def get(self, resource_type, resource_name, namespace: str, output='yaml'):
-        config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
-
-        result = self.run_cmd(
-            "kubectl %(config)s get %(resource_type)s %(resource_name)s --namespace %(namespace)s -o %(output)s" % locals(),
-            capture_output=True, verbose=False)
-        return result.stdout.decode("utf-8")
 
     def download(self, resource_name, namespace, local_dir, remote_dir, container=None):
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
@@ -72,6 +68,34 @@ class KubernetesClient(CmdTaskMixin):
         container_options = '' if not container else '-c ' + container
         cmd = 'kubectl %(config)s exec %(interactive_option)s %(resource_type)s/%(resource_name)s %(container_options)s --namespace %(namespace)s -- %(command)s' % locals()
         self.run_cmd(cmd)
+
+    def get(self, resource_type, resource_name='', namespace='all', output='yaml'):
+        resource_name = '' if not resource_name else resource_name
+        config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
+        namespace_options = ''
+        if namespace == 'all':
+            namespace_options = '-A'
+        else:
+            namespace_options = '--namespace %s' % namespace
+
+        output_options = '' if not output else '-o ' + output
+
+        cmd = 'kubectl %(config)s get %(resource_type)s %(resource_name)s %(namespace_options)s -o wide' % locals()
+        result = self.run_cmd(cmd, capture_output=True, verbose=False)
+        return result.stdout.decode('UTF-8')
+
+    def describe(self, resource_type, resource_name=None, namespace='all'):
+        config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
+        namespace_options = ''
+        if namespace == 'all':
+            namespace_options = '-A'
+        else:
+            namespace_options = '--namespace %s' % namespace
+
+        resource_name = '' if not resource_name else resource_name
+        cmd = 'kubectl %(config)s describe %(resource_type)s %(resource_name)s %(namespace_options)s' % locals()
+        result = self.run_cmd(cmd, capture_output=True, verbose=False)
+        return result.stdout.decode("UTF-8")
 
 
 if __name__ == '__main__':
