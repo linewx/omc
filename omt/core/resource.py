@@ -3,11 +3,14 @@
 import os
 
 import pkg_resources
+from omt.config import settings
 
 import omt
 import logging
 import copy
 import textwrap
+
+from omt.core.decorator import filecache
 
 
 class Resource:
@@ -176,7 +179,7 @@ class Resource:
                         result.append(one[0])
                 else:
                     result.append(one)
-        return "\n".join(result)
+        return result
 
 
     def _get_public_method_completion(self):
@@ -212,11 +215,20 @@ class Resource:
         """this is the description for resources"""
         return self._get_resource_name()
 
+    def _get_cache_file_name(self):
+        cache_file = os.path.join(settings.OMT_COMPLETION_CACHE_DIR, *self.context['all'][1:])
+        return cache_file
+        # return '/tmp/file.txt'
+
+    @filecache(duration=60*30)
     def _completion(self, short_mode=False):
         public_methods = self._get_public_method_completion()
         sub_modules = self._get_sub_modules()
-        self._print_completion(public_methods, short_mode)
-        self._print_completion(sub_modules, short_mode)
+        all_comp = []
+        all_comp.extend(self._get_completion(public_methods, short_mode))
+        all_comp.extend(self._get_completion(sub_modules, short_mode))
+        return "\n".join(all_comp)
+
 
     def _help(self):
         raw_command = self.context['all']
@@ -247,7 +259,7 @@ class Resource:
     def completion(self):
         # list candidates for completions in zsh style (a:"description for a" b:"description for b")
         try:
-            self._completion()
+            print(self._completion())
         except Exception as inst:
             # keep silent in completion mode
             return

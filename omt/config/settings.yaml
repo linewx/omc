@@ -6,6 +6,7 @@ default:
   ssh_config_file: "@format {env[HOME]}/.ssh/config"
   omt_kube_config_dir: "@format {this.CONFIG_DIR}/kube"
   omt_kube_cache_dir: "@format {this.CACHE_DIR}/kube"
+  omt_completion_cache_dir: "@format {this.CACHE_DIR}/completion"
   db:
     drivername: sqlite
     database: "@format {env[OMT_HOME]}/omt.db"

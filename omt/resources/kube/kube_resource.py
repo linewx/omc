@@ -2,6 +2,8 @@ import json
 import os
 from datetime import datetime
 
+from omt.core.decorator import filecache
+
 from omt.config import settings
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
@@ -33,12 +35,16 @@ class KubeResource(Resource, CmdTaskMixin):
         list_func = getattr(self.client, 'list_%s_for_all_namespaces' % self._get_kube_resource_type())
         return list_func()
 
+    @filecache(duration=60)
     def _completion(self, short_mode=True):
-        super()._completion(True)
+        results = []
+        results.append(super()._completion(True))
 
         if not self._have_resource_value():
             ret = self._list_resource_for_all_namespaces()
-            self._print_completion([one.metadata.name for one in ret.items], True)
+            results.extend(self._get_completion([one.metadata.name for one in ret.items], True))
+
+        return "\n".join(results)
 
     def list(self):
         resource_name = self._get_one_resource_value()

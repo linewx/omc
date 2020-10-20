@@ -15,12 +15,16 @@ class Kube(Resource, CmdTaskMixin):
     def _description(self):
         return 'The Kubernetes command-line tool'
 
+
     def _completion(self, short_mode=True):
-        super()._completion(True)
+        results = []
+        results.append(super()._completion(True))
         if not self._have_resource_value():
             if os.path.exists(settings.OMT_KUBE_CONFIG_DIR):
                 resources = os.listdir(settings.OMT_KUBE_CONFIG_DIR)
-                self._print_completion(resources, True)
+                results.append("\n".join(self._get_completion(resources, True)))
+
+        return "\n".join(results)
 
     def _before_sub_resource(self):
         try:
