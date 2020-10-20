@@ -64,13 +64,11 @@ class KubernetesClient(CmdTaskMixin):
         cmd = "kubectl %(config)s cp %(local_dir)s %(namespace)s/%(resource_name)s:%(remote_dir)s" % locals()
         self.run_cmd(cmd)
 
-    def exec_cmd(self, resource_type, resource_name, namespace, command, container=None, interactive=False):
+    def exec(self, resource_type, resource_name, namespace, command, container=None, stdin=True):
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
-        interactive_option = '-i' if interactive else ''
-        cmd = 'kubectl %(config)s exec %(interactive_option)s --namespace %(namespace)s -- %(command)s' % locals()
+        interactive_option = '-it' if stdin else ''
+        cmd = 'kubectl %(config)s exec %(interactive_option)s %(resource_type)s/%(resource_name)s --namespace %(namespace)s -- %(command)s' % locals()
         self.run_cmd(cmd)
-
-
 
 
 if __name__ == '__main__':

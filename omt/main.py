@@ -15,6 +15,7 @@ def list_resources():
     resources = (pkg_resources.resource_listdir('omt', 'resources'))
     resources = list(filter(lambda x: x != '__init__.py' and x != '__pycache__', resources))
     for resource_type in resources:
+        print(resource_type)
         mod = __import__(".".join(['omt', 'resources', resource_type, resource_type]),
                          fromlist=[resource_type.capitalize()])
         clazz = getattr(mod, resource_type.capitalize())

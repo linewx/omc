@@ -206,5 +206,8 @@ class KubeResource(Resource, CmdTaskMixin):
         else:
             raise Exception("no config file found")
 
-        def restore(self):
-            pass
+    def exec(self):
+        resource_name = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+
+        self.client.exec(self._get_kube_resource_type(), resource_name, namespace, " ".join(self._get_action_params()))
