@@ -18,7 +18,7 @@ def filecache(duration=None, file='/tmp/cache.txt'):
             if not os.path.exists(cache_file):
                 cache_is_valid = False
             else:
-                if duration is None:
+                if duration is None or duration == -1:
                     cache_is_valid = True
                 else:
                     # duration and file all exists

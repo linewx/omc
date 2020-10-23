@@ -215,7 +215,8 @@ class Resource:
         return self._get_resource_name()
 
     def _get_cache_file_name(self):
-        cache_file = os.path.join(settings.OMT_COMPLETION_CACHE_DIR, *self.context['all'][1:])
+        main_path = [one for one in self.context['all'][1:] if not one.startswith('-')]
+        cache_file = os.path.join(settings.OMT_COMPLETION_CACHE_DIR, *main_path)
         return cache_file
         # return '/tmp/file.txt'
 
@@ -254,7 +255,21 @@ class Resource:
     ################################################################
     # common public user methods, inherit protected methods if need change.
 
+    def _clean_completin_cache(self):
+        cache_file = self._get_cache_file_name()
+        cache_folder = os.path.dirname(cache_file)
+
+        duration_file = os.path.join(cache_folder, 'duration')
+
+        if os.path.exists(cache_file):
+            os.remove(cache_file)
+
+        if os.path.exists(duration_file):
+            os.remove(duration_file)
+
     def completion(self):
+        if '--refresh' in self._get_action_params():
+            self._clean_completin_cache()
         # list candidates for completions in zsh style (a:"description for a" b:"description for b")
         try:
             print(self._completion())

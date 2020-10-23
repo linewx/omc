@@ -23,7 +23,7 @@ class Completion(Resource, CmdTaskMixin):
     def _get_resource_completion(self):
         results = []
         resources = (pkg_resources.resource_listdir('omt', 'resources'))
-        resources = list(filter(lambda x: x != '__init__.py' and x not in ['__pycache__', 'completion'], resources))
+        resources = list(filter(lambda x: x != '__init__.py' and x not in ['__pycache__'], resources))
         for resource_type in resources:
             mod = __import__(".".join(['omt', 'resources', resource_type, resource_type]),
                              fromlist=[resource_type.capitalize()])
@@ -33,6 +33,8 @@ class Completion(Resource, CmdTaskMixin):
         return "\n".join(results)
 
     def _run(self):
+        if '--refresh' in self.context['all']:
+            self._clean_completin_cache()
         print(self._get_resource_completion())
 
 

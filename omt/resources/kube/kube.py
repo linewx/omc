@@ -1,13 +1,9 @@
-import functools
 import os
 
-import argparse
 from omt.common import CmdTaskMixin
 from omt.config import settings
-from omt.core import simple_completion
+from omt.core.decorator import filecache
 from omt.core.resource import Resource
-from kubernetes import client, config
-
 from omt.utils.k8s_utils import KubernetesClient
 
 
@@ -15,7 +11,7 @@ class Kube(Resource, CmdTaskMixin):
     def _description(self):
         return 'The Kubernetes command-line tool'
 
-
+    @filecache(duration=600)
     def _completion(self, short_mode=True):
         results = []
         results.append(super()._completion(True))
