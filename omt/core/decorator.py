@@ -43,6 +43,10 @@ def filecache(duration=None, file='/tmp/cache.txt'):
                 with open(cache_file, 'w') as f:
                     f.write(result)
 
+                duration_file_name = os.path.join(os.path.dirname(cache_file), 'duration')
+                with open(duration_file_name, 'w') as f:
+                    f.write("-1" if duration is None else str(duration))
+
                 return result
 
         return wrapper

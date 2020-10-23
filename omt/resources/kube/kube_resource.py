@@ -38,7 +38,7 @@ class KubeResource(Resource, CmdTaskMixin):
     @filecache(duration=60)
     def _completion(self, short_mode=True):
         results = []
-        results.append(super()._completion(True))
+        results.append(super()._completion(False))
 
         if not self._have_resource_value():
             ret = self._list_resource_for_all_namespaces()
@@ -47,6 +47,7 @@ class KubeResource(Resource, CmdTaskMixin):
         return "\n".join(results)
 
     def list(self):
+        'display one or more resources'
         resource_name = self._get_one_resource_value()
         namespace = 'all' if not resource_name else self.client.get_namespace(self._get_kube_resource_type(), resource_name)
 
@@ -55,10 +56,8 @@ class KubeResource(Resource, CmdTaskMixin):
         result = self.client.get(self._get_kube_resource_type(), resource_name, namespace)
         print(result)
 
-    def describe(self):
-        pass
-
     def yaml(self):
+        'get configuration in yaml format'
         resource = self._get_one_resource_value()
         namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
         result = self._read_namespaced_resource(resource, namespace)
@@ -69,6 +68,7 @@ class KubeResource(Resource, CmdTaskMixin):
         print(stream.getvalue())
 
     def json(self):
+        'get configuration by json format'
         resource = self._get_one_resource_value()
         namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
         result = self._read_namespaced_resource(resource, namespace)
@@ -80,11 +80,13 @@ class KubeResource(Resource, CmdTaskMixin):
         return ','.join(['%s=%s' % (k, v) for (k, v) in selectors.items()])
 
     def namespace(self):
+        'get resource namespace'
         resource = self._get_one_resource_value()
         namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
         print(namespace)
 
     def event(self):
+        'show event on the resource'
         # https://kubernetes.docker.internal:6443/api/v1/namespaces/default/events?fieldSelector=
         # involvedObject.uid=4bb31f4d-99f1-4acc-a024-8e2484573733,
         # involvedObject.name=itom-xruntime-rabbitmq-6464654786-vnjxz,
@@ -106,6 +108,7 @@ class KubeResource(Resource, CmdTaskMixin):
         print(self.client.list_namespaced_event(namespace, field_selector=self._build_field_selector(the_selector)))
 
     def get(self):
+        'get resource by configuration key'
         if 'completion' in self._get_params():
             resource = self._get_one_resource_value()
             namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
@@ -128,6 +131,7 @@ class KubeResource(Resource, CmdTaskMixin):
             print(get_obj_value(result, the_params))
 
     def set(self):
+        'update restore by configuration key'
         if 'completion' in self._get_params():
             resource = self._get_one_resource_value()
             namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
@@ -153,6 +157,8 @@ class KubeResource(Resource, CmdTaskMixin):
         print(get_obj_value(new_result, config_key))
 
     def delete(self):
+        'delete node by configuration key'
+        #todo@rain: to support delete entired resource and completion cache
         if 'completion' in self._get_params():
             resource = self._get_one_resource_value()
             namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
@@ -174,12 +180,14 @@ class KubeResource(Resource, CmdTaskMixin):
         new_result = self.client.replace_namespaced_deployment(resource, namespace, result)
 
     def edit(self):
+        'Edit a resource from the default editor.'
         resource = self._get_one_resource_value()
         namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
 
         self.client.edit(self._get_kube_resource_type(), resource, namespace)
 
     def save(self):
+        'save configuration in file cache to be restored'
         resource_name = self._get_one_resource_value()
         namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
         kube_instance = self._get_one_resource_value("kube")
@@ -202,6 +210,7 @@ class KubeResource(Resource, CmdTaskMixin):
             f.write(content)
 
     def restore(self):
+        'restore configuration saved in file cache'
         resource_name = self._get_one_resource_value()
         namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
         kube_instance = self._get_one_resource_value("kube")
@@ -218,12 +227,14 @@ class KubeResource(Resource, CmdTaskMixin):
             raise Exception("no config file found")
 
     def exec(self):
+        'Execute a command in a container'
         resource_name = self._get_one_resource_value()
         namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
 
         self.client.exec(self._get_kube_resource_type(), resource_name, namespace, " ".join(self._get_action_params()))
 
     def describe(self):
+        'Show details of a specific resource or group of resources'
         resource_name = self._get_one_resource_value()
         namespace = 'all'
         if resource_name:

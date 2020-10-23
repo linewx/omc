@@ -181,7 +181,6 @@ class Resource:
                     result.append(one)
         return result
 
-
     def _get_public_method_completion(self):
         public_methods = self._get_public_methods()
         return [(one, getattr(self, one).__doc__ if getattr(self, one).__doc__ is not None else one) for one in
@@ -220,7 +219,7 @@ class Resource:
         return cache_file
         # return '/tmp/file.txt'
 
-    @filecache(duration=60*30)
+    @filecache(duration=60 * 30)
     def _completion(self, short_mode=False):
         public_methods = self._get_public_method_completion()
         sub_modules = self._get_sub_modules()
@@ -228,7 +227,6 @@ class Resource:
         all_comp.extend(self._get_completion(public_methods, short_mode))
         all_comp.extend(self._get_completion(sub_modules, short_mode))
         return "\n".join(all_comp)
-
 
     def _help(self):
         raw_command = self.context['all']

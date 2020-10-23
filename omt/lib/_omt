@@ -1,47 +1,13 @@
 #compdef omt
 #
-# zsh completion for docker (http://docker.com)
+# zsh completion for omt
 #
-# version:  0.3.0
-# github:   https://github.com/felixr/docker-zsh-completion
-#
-# contributors:
-#   - Felix Riedel
-#   - Steve Durrheimer
-#   - Vincent Bernat
-#
-# license:
-#
-# Copyright (c) 2013, Felix Riedel
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#     * Neither the name of the <organization> nor the
-#       names of its contributors may be used to endorse or promote products
-#       derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
+
 
 # Short-option stacking can be enabled with:
 #  zstyle ':completion:*:*:docker:*' option-stacking yes
 #  zstyle ':completion:*:*:docker-*:*' option-stacking yes
-__docker_arguments() {
+__omt_arguments() {
     if zstyle -t ":completion:${curcontext}:" option-stacking; then
         print -- -s
     fi
@@ -52,14 +18,22 @@ __docker_arguments() {
 __omt_commands() {
     local -a subcmds
     current_value=${(j: :)words[1, $CURRENT-1]}
-    subcmds=(${(f)"$(_call_program commands omt completion 2>&1)"})
+    omt_comp=omt
+    if [ -f ~/.omt/bin/omt-completion.sh ];then
+        omt_comp=~/.omt/bin/omt-completion.sh
+    fi
+    subcmds=(${(f)"$(_call_program commands $omt_comp completion 2>&1)"})
     _describe 'command' subcmds
 }
 
 __omt_sub_commands() {
+    omt_comp=omt
+    if [ -f ~/.omt/bin/omt-completion.sh ];then
+        omt_comp=~/.omt/bin/omt-completion.sh
+    fi
     local -a subcmds
     current_value=${(j: :)words[1, $CURRENT-1]}
-    subcmds=(${(f)"$(_call_program commands omt $current_value completion 2>&1)"})
+    subcmds=(${(f)"$(_call_program commands $omt_comp $current_value completion 2>&1)"})
     _describe 'command' subcmds
 }
 
@@ -78,7 +52,7 @@ _omt() {
     integer ret=1
     typeset -A opt_args
 
-    _arguments $(__docker_arguments) -C \
+    _arguments $(__omt_arguments) -C \
         "(: -)"{-h,--help}"[Print usage]" \
         "($help -v --version)"{-v,--version}"[Print version information and quit]" \
         "($help -): :->command" \

@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 
 import logging
+import os
 import sys
 import traceback
 
 import pkg_resources
+from omt.core.decorator import filecache
+
+from omt.config import settings
 
 
 def usage():
     print('''omt resource action params ''')
 
 
-def list_resources():
+@filecache(duration=-1, file=os.path.join(settings.OMT_COMPLETION_CACHE_DIR, 'completion'))
+def _completion():
     resources = (pkg_resources.resource_listdir('omt', 'resources'))
     resources = list(filter(lambda x: x != '__init__.py' and x != '__pycache__', resources))
     for resource_type in resources:
@@ -28,9 +33,9 @@ def main():
     logger = logging.getLogger(__name__)
     resource_type = sys.argv[1]
 
-    if resource_type == 'completion':
-        list_resources()
-        return
+    # if resource_type == 'completion':
+    #     print(_completion())
+    #     return
 
     try:
         mod = __import__(".".join(['omt', 'resources', resource_type, resource_type]),
@@ -44,7 +49,6 @@ def main():
         clazz(context)._exec()
     except Exception as inst:
         traceback.print_exc()
-        logger.error(inst)
         usage()
 
 
