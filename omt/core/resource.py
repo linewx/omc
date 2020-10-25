@@ -214,13 +214,14 @@ class Resource:
         """this is the description for resources"""
         return self._get_resource_name()
 
+    # @staticmethod
     def _get_cache_file_name(self):
         main_path = [one for one in self.context['all'][1:] if not one.startswith('-')]
         cache_file = os.path.join(settings.OMT_COMPLETION_CACHE_DIR, *main_path)
         return cache_file
         # return '/tmp/file.txt'
 
-    @filecache(duration=60 * 30)
+    @filecache(duration=60 * 30, file=_get_cache_file_name)
     def _completion(self, short_mode=False):
         public_methods = self._get_public_method_completion()
         sub_modules = self._get_sub_modules()
@@ -279,3 +280,6 @@ class Resource:
 
     def help(self):
         self._help()
+
+if __name__ == '__main__':
+    Resource.__name__

@@ -7,10 +7,12 @@ from omt.common.formater import format_list
 from omt.core import Resource
 import argparse
 
+from omt.core.decorator import filecache
 from omt.utils.rmq_utils import build_admin_params
 
 
 class Exchange(Resource):
+    @filecache(duration=60 * 5, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=False):
         super()._completion(True)
 

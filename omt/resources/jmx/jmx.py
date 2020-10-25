@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
+import json
+import os
 from os.path import exists
+
+from omt.config import settings
 
 from omt.common import CmdTaskMixin
 from omt.core import Resource
 import pkg_resources
 
+from omt.core.decorator import filecache
 from omt.utils import JmxTermUtils
 
 
@@ -33,12 +38,19 @@ ACTION LIST
         cmd = 'echo jvms | java -jar %s -n' % jmxterm
         self.run_cmd(cmd)
 
-    def _completion(self, short_mode=False):
-        super()._completion(True)
+    @filecache(duration=60 * 60 * 24, file=Resource._get_cache_file_name)
+    def _completion(self, short_mode=True):
+        results = []
+        results.append(super()._completion(False))
 
         if not self._have_resource_value():
-            cmd = JmxTermUtils.build_command("jvms")
-            result = self.run_cmd(cmd, capture_output=True, verbose=False)
-            output = result.stdout.decode("utf-8").splitlines()
-            jvms = [list(map(lambda x: str(x).strip(), str(one).split(" ", 1))) for one in output]
-            self._print_completion(jvms)
+            # list rabbitmq connection instance from config file
+            config_file_name = os.path.join(settings.CONFIG_DIR, self.__class__.__name__.lower() + '.json')
+            if (os.path.exists(config_file_name)):
+                with open(config_file_name) as f:
+                    instances = json.load(f)
+                    results.extend(
+                        self._get_completion([(value.get('host') + str(value.get('port')), key) for key, value in instances.items()],
+                                             False))
+
+        return "\n".join(results)

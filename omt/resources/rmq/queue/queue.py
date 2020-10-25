@@ -3,6 +3,7 @@ import json
 import sys
 import time
 
+from omt.core.decorator import filecache
 from omt.utils.rmq_utils import build_admin_params
 
 from omt.common import CompletionMixin
@@ -11,6 +12,7 @@ from omt.core import Resource
 
 
 class Queue(Resource, CompletionMixin):
+    @filecache(duration=60 * 5, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=True):
         super()._completion(short_mode)
 

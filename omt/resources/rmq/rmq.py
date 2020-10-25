@@ -3,6 +3,8 @@ import os
 from omt.core import Resource
 import argparse
 import json
+
+from omt.core.decorator import filecache
 from omt.utils import UrlUtils
 from omt.utils.rabbitmq import Management
 from omt.config import settings
@@ -23,20 +25,21 @@ class Rmq(Resource):
             'client': Management(self._build_configuration())
         }
 
+    @filecache(duration=60 * 60 * 24, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=True):
-        super()._completion(False)
+        results = []
+        results.append(super()._completion(False))
 
         if not self._have_resource_value():
             # list rabbitmq connection instance from config file
-            try:
-                config_file_name = os.path.join(settings.RESOURCE_CONFIG_DIR, self.__class__.__name__.lower() + '.json')
-
+            config_file_name = os.path.join(settings.RESOURCE_CONFIG_DIR, self.__class__.__name__.lower() + '.json')
+            if (os.path.exists(config_file_name)):
                 with open(config_file_name) as f:
                     instances = json.load(f)
-                    self._print_completion([(key, 'instance=' + key) for key, value in instances.items()], False)
-            except:
-                # no config file found
-                pass
+                    results.extend(
+                        self._get_completion([(key, 'instance=' + key) for key, value in instances.items()], False))
+
+        return "\n".join(results)
 
     def _build_configuration(self):
         args = self.parser.parse_args(self._get_resource_values())

@@ -1,17 +1,30 @@
 import functools
 import os
+import inspect
 
 from omt.utils.file_utils import make_directory
+from collections.abc import Callable
 
 
-def filecache(duration=None, file='/tmp/cache.txt'):
+def filecache(duration=None, file: (str, Callable) = '/tmp/cache.txt'):
+    def _is_class_method(func):
+        spec = inspect.signature(func)
+        if len(spec.parameters) > 0:
+            if list(spec.parameters.keys())[0] == 'self':
+                return True
+        return False
+
     def completion_cache_decorator(func):
         @functools.wraps(func)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(*args, **kwargs):
             from datetime import datetime
-            cache_file = file
-            if hasattr(self, '_get_cache_file_name'):
-                cache_file = self._get_cache_file_name()
+            if callable(file):
+                if _is_class_method(file):
+                    cache_file = file(args[0])
+                else:
+                    cache_file = file()
+            else:
+                cache_file = file
 
             cache_is_valid = False
 
@@ -39,7 +52,7 @@ def filecache(duration=None, file='/tmp/cache.txt'):
                     os.remove(cache_file)
 
                 make_directory(os.path.dirname(cache_file))
-                result = func(self, *args, **kwargs)
+                result = func(*args, **kwargs)
                 with open(cache_file, 'w') as f:
                     f.write(result)
 

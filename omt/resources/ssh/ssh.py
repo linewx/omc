@@ -5,6 +5,7 @@ import argparse
 from omt.common import CmdTaskMixin
 from omt.config import settings
 from omt.core import simple_completion
+from omt.core.decorator import filecache
 from omt.core.resource import Resource
 
 
@@ -13,8 +14,10 @@ class Ssh(Resource, CmdTaskMixin):
     def _description(self):
         return 'SSH(Secure Shell) Smart Tool Set'
 
+    @filecache(duration=60 * 60, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=True):
-        super()._completion(True)
+        results = []
+        results.append(super()._completion(True))
         if not self._have_resource_value():
             if not os.path.exists(settings.SSH_CONFIG_FILE):
                 return
@@ -31,7 +34,8 @@ class Ssh(Resource, CmdTaskMixin):
                     except:
                         pass
 
-            self._print_completion(ssh_hosts)
+            results.extend(ssh_hosts)
+        return "\n".join(results)
 
     @simple_completion(['--dry-run'])
     def cache(self):

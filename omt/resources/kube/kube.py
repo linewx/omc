@@ -11,7 +11,7 @@ class Kube(Resource, CmdTaskMixin):
     def _description(self):
         return 'The Kubernetes command-line tool'
 
-    @filecache(duration=600)
+    @filecache(duration=600, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=True):
         results = []
         results.append(super()._completion(True))

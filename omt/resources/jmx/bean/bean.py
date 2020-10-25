@@ -48,8 +48,8 @@ class Bean(Resource, CmdTaskMixin):
             jmx = self._get_one_resource_value('jmx')
             bean = self._get_one_resource_value()
             bean = bean.replace(" ", "\\ ")
-            cmd = "open %s && bean %s && run %s" %  (jmx, bean, attr_name)
-            #cmd = 'echo "open %s && bean %s && set %s"  | java -jar %s -n' % (jmx, bean, attr_name, jmxterm)
+            cmd = "open %s && bean %s && run %s" % (jmx, bean, attr_name)
+            # cmd = 'echo "open %s && bean %s && set %s"  | java -jar %s -n' % (jmx, bean, attr_name, jmxterm)
             self.run_cmd(JmxTermUtils.build_command(cmd))
 
     def get(self):
@@ -87,9 +87,8 @@ class Bean(Resource, CmdTaskMixin):
             jmx = self._get_one_resource_value('jmx')
             bean = self._get_one_resource_value()
             bean = bean.replace(" ", "\\ ")
-            cmd = "open %s && bean %s && set %s" %  (jmx, bean, attr_name)
+            cmd = "open %s && bean %s && set %s" % (jmx, bean, attr_name)
             self.run_cmd(JmxTermUtils.build_command(cmd))
-
 
     def _parse_info(self, result):
         # notification parser is not support right now, should find a example
