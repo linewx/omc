@@ -1,6 +1,7 @@
 import re
 
 import pkg_resources
+from omc.core.decorator import filecache
 
 from omc.common import CmdTaskMixin
 from omc.core import Resource
@@ -11,19 +12,21 @@ class Bean(Resource, CmdTaskMixin):
     def _run(self):
         pass
 
+    @filecache(duration=60 * 60, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=False):
-        if self._have_resource_value():
-            super()._completion(True)
+        results = []
 
-        else:
+        results.append(super()._completion(True))
+
+        if not self._have_resource_value():
             jmx = self.context['jmx'][0] if self.context['jmx'] else ''
             cmd = JmxTermUtils.build_command('open %s && beans' % jmx)
             result = self.run_cmd(cmd, capture_output=True)
             output = result.stdout.decode("utf-8").splitlines()
             output = list(map(lambda x: x.replace(":", "\:"), output))
-            self._print_completion(output, True)
-            # for line in output:
-            #     print(line.replace(":", "\:") + ":" + ' ')
+            results.extend(self._get_completion(output, True))
+
+        return '\n'.join(results)
 
     def info(self):
         jmxterm = pkg_resources.resource_filename(__name__, '../../../lib/jmxterm-1.0.2-uber.jar')

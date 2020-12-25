@@ -14,15 +14,17 @@ from omc.utils.rmq_utils import build_admin_params
 class Exchange(Resource):
     @filecache(duration=60 * 5, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=False):
-        super()._completion(True)
-
+        results = []
+        results.append(super()._completion(True))
         if not self._get_resource_values():
             # resource haven't filled yet
             client = self.context['common']['client']
             exchanges = json.loads(client.invoke_list('exchanges'))
             results = [(one['name'], "name is %(name)s, type is %(type)s | vhost is %(vhost)s" % one) for one in
                        exchanges]
-            self._print_completion(results, short_mode=True)
+            results.extend(self._get_completion(results, short_mode=True))
+
+        return '\n'.join(results)
 
     def list(self):
         client = self.context['common']['client']

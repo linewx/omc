@@ -14,14 +14,16 @@ from omc.core import Resource
 class Queue(Resource, CompletionMixin):
     @filecache(duration=60 * 5, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=True):
-        super()._completion(short_mode)
+        results = []
+        results.append(super()._completion(False))
 
         if not self._have_resource_value():
             # completions for queue name
             client = self.context['common']['client']
             queues = json.loads(client.invoke_list('queues'))
             results = [(one['name'], "auto_delete is %(auto_delete)s | vhost is %(vhost)s" % one) for one in queues]
-            self.print_completion(results, short_mode=True)
+            results.extend(self._get_completion(results, short_mode=True))
+        return '\n'.join(results)
 
     def list(self):
         client = self.context['common']['client']

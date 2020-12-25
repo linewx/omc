@@ -10,8 +10,6 @@ from omc.core.decorator import filecache
 
 
 class Arthas(Resource, CmdTaskMixin):
-
-
     def _description(self):
         return 'Arthas - JVM Debug Tools'
 
@@ -21,7 +19,5 @@ class Arthas(Resource, CmdTaskMixin):
 
     def _run(self):
         arthas = pkg_resources.resource_filename(__name__, '../../lib/arthas-boot.jar')
-        cmd = "java -jar %s"% arthas
+        cmd = "java -jar %s" % arthas
         self.run_cmd(cmd)
-
-

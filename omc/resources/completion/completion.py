@@ -27,6 +27,7 @@ class Completion(Resource, CmdTaskMixin):
 
         return "\n".join(results)
 
+
     def _run(self):
         if '--refresh' in self.context['all']:
             self._clean_completin_cache()

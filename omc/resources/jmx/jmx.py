@@ -50,7 +50,8 @@ ACTION LIST
                 with open(config_file_name) as f:
                     instances = json.load(f)
                     results.extend(
-                        self._get_completion([(value.get('host') + str(value.get('port')), key) for key, value in instances.items()],
-                                             False))
+                        self._get_completion(
+                            [(value.get('host') + ':'+ str(value.get('port')), key) for key, value in instances.items()],
+                            False))
 
         return "\n".join(results)
