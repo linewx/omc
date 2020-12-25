@@ -11,7 +11,11 @@ Features
 
 Installation
 -------------------
+```
 pip install omc
+omc config init
+```
+
 
 
 
