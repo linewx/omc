@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
-from os.path import exists
 
-from omc.config import settings
-
-from omc.core.decorator import filecache
-
-from omc.common import CmdTaskMixin
-from omc.core import Resource
 import pkg_resources
 
-from omc.utils import JmxTermUtils
+from omc.common import CmdTaskMixin
+from omc.config import settings
+from omc.core import Resource
+from omc.core.decorator import filecache
 
 
 class Completion(Resource, CmdTaskMixin):
-
 
     def _description(self):
         return 'for resource completion'
@@ -36,5 +31,3 @@ class Completion(Resource, CmdTaskMixin):
         if '--refresh' in self.context['all']:
             self._clean_completin_cache()
         print(self._get_resource_completion())
-
-
