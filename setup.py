@@ -12,19 +12,19 @@ install_requires = [
 
 
 setup(
-    name='oh-my-tools',
-    version=0.01,
-    description='oh my tools',
+    name='omc',
+    version=0.1,
+    description='oh my command',
     license='MIT',
     author='Lu Ganlin',
     author_email='linewx1981@gmail.com',
-    url='git@github.com:linewx/omt.git',
+    url='https://github.com/linewx/omc',
     packages=find_packages(),
-    package_data={'omt.config': ['*.yaml'], 'omt.lib': ['**', '**/*', '**/**/*']},
+    package_data={'omc.config': ['*.yaml'], 'omc.lib': ['**', '**/*', '**/**/*']},
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
-            'omt = omt.main:main',
+            'omc = omc.main:main',
         ],
     }
 )

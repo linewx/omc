@@ -11,7 +11,7 @@ Features
 
 Installation
 -------------------
-pip install git+ssh://git@github.houston.softwaregrp.net/Gan-Lin-Lu/omt
+pip install omc
 
 
 

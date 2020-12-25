@@ -17,4 +17,4 @@ omw.egg-info/
 build/
 dist/
 .vscode/
-omt.egg-info
+*.egg-info

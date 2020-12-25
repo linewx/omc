@@ -1,0 +1,90 @@
+#compdef omc
+#
+# zsh completion for omc
+#
+
+
+# Short-option stacking can be enabled with:
+#  zstyle ':completion:*:*:docker:*' option-stacking yes
+#  zstyle ':completion:*:*:docker-*:*' option-stacking yes
+__omc_arguments() {
+    if zstyle -t ":completion:${curcontext}:" option-stacking; then
+        print -- -s
+    fi
+}
+
+
+
+__omc_commands() {
+    local -a subcmds
+    current_value=${(j: :)words[1, $CURRENT-1]}
+    omc_comp=omc
+    if [ -f ~/.omc/bin/omc-completion.sh ];then
+        omc_comp=~/.omc/bin/omc-completion.sh
+    fi
+    subcmds=(${(f)"$(_call_program commands $omc_comp completion 2>&1)"})
+    _describe 'command' subcmds
+}
+
+__omc_sub_commands() {
+    omc_comp=omc
+    if [ -f ~/.omc/bin/omc-completion.sh ];then
+        omc_comp=~/.omc/bin/omc-completion.sh
+    fi
+    local -a subcmds
+    current_value=${(j: :)words[1, $CURRENT-1]}
+    subcmds=(${(f)"$(_call_program commands $omc_comp $current_value completion 2>&1)"})
+    _describe 'command' subcmds
+}
+
+
+
+
+_omc() {
+    # Support for subservices, which allows for `compdef _docker docker-shell=_docker_containers`.
+    # Based on /usr/share/zsh/functions/Completion/Unix/_git without support for `ret`.
+    if [[ $service != omc ]]; then
+        _call_function - _$service
+        return
+    fi
+
+    local curcontext="$curcontext" state line help="-h --help"
+    integer ret=1
+    typeset -A opt_args
+
+    _arguments $(__omc_arguments) -C \
+        "(: -)"{-h,--help}"[Print usage]" \
+        "($help -v --version)"{-v,--version}"[Print version information and quit]" \
+        "($help -): :->command" \
+        "($help -)*:: :->option-or-argument" && ret=0
+
+    case $state in
+        (command)
+            __omc_commands && ret=0
+            ;;
+        (option-or-argument)
+            #curcontext=${curcontext%:*:*}:docker-$words[1]:
+
+            __omc_sub_commands && ret=0
+            ;;
+    esac
+
+    return ret
+}
+
+_dockerd() {
+    integer ret=1
+    words[1]='daemon'
+    __docker_subcommand && ret=0
+    return ret
+}
+
+_omc "$@"
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 4
+# indent-tabs-mode: nil
+# sh-basic-offset: 4
+# End:
+# vim: ft=zsh sw=4 ts=4 et
