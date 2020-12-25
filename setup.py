@@ -12,13 +12,13 @@ install_requires = [
 
 
 setup(
-    name='omt',
+    name='oh-my-tools',
     version=0.01,
     description='oh my tools',
     license='MIT',
     author='Lu Ganlin',
-    author_email='gan-lin.lu@microfocus.com',
-    url='https://github.houston.softwaregrp.net/Gan-Lin-Lu/omt',
+    author_email='linewx1981@gmail.com',
+    url='git@github.com:linewx/omt.git',
     packages=find_packages(),
     package_data={'omt.config': ['*.yaml'], 'omt.lib': ['**', '**/*', '**/**/*']},
     install_requires=install_requires,
