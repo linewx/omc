@@ -25,17 +25,14 @@ class Config(Resource, CmdTaskMixin):
         mode |= (mode & 0o444) >> 2
         os.chmod(the_completion_file_name, mode)
 
-
         # 3. install omc plugins to omz
         omz_custom = os.path.join(os.environ.get("HOME"), ".oh-my-zsh/custom/plugins")
         omw_plugin_dir = os.path.join(omz_custom, 'omc')
         if os.path.exists(omz_custom):
             file_utils.make_directory(omw_plugin_dir)
 
-            omz_completion_file_= pkg_resources.resource_filename(__name__, '../../lib/_omc')
+            omz_completion_file_ = pkg_resources.resource_filename(__name__, '../../lib/_omc')
             file_utils.copy(omz_completion_file_, omw_plugin_dir)
-
-
 
     def sync_version(self):
         pass
