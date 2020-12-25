@@ -13,7 +13,7 @@ class Arthas(Resource, CmdTaskMixin):
 
 
     def _description(self):
-        return 'for resource completion'
+        return 'Arthas - JVM Debug Tools'
 
     @filecache(duration=-1, file=os.path.join(settings.OMT_COMPLETION_CACHE_DIR, 'completion'))
     def _get_resource_completion(self):

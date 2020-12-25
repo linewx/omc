@@ -49,7 +49,8 @@ class KubeResource(Resource, CmdTaskMixin):
     def list(self):
         'display one or more resources'
         resource_name = self._get_one_resource_value()
-        namespace = 'all' if not resource_name else self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+        namespace = 'all' if not resource_name else self.client.get_namespace(self._get_kube_resource_type(),
+                                                                              resource_name)
 
         # ret = self._list_resource_for_all_namespaces()
         # print(ret)
@@ -107,15 +108,25 @@ class KubeResource(Resource, CmdTaskMixin):
 
         print(self.client.list_namespaced_event(namespace, field_selector=self._build_field_selector(the_selector)))
 
+    def _get_config_key_cache_file_name(self):
+        main_path = [one for one in self.context['all'][1:] if not one.startswith('-')]
+        cache_file = os.path.join(settings.OMT_COMPLETION_CACHE_DIR, *main_path)
+        return cache_file
+
+    @filecache(duration=60 * 5, file=_get_config_key_cache_file_name)
+    def _get_config_key_completion(self):
+        resource = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
+        result = self._read_namespaced_resource(resource, namespace)
+        prompts = []
+        get_all_dict_Keys(result.to_dict(), prompts)
+        return '\n'.join(self._get_completion(prompts))
+
     def get(self):
         'get resource by configuration key'
         if 'completion' in self._get_params():
-            resource = self._get_one_resource_value()
-            namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
-            result = self._read_namespaced_resource(resource, namespace)
-            prompts = []
-            get_all_dict_Keys(result.to_dict(), prompts)
-            self._print_completion(prompts)
+            completion = self._get_config_key_completion()
+            print(completion)
             return
 
         resource = self._get_one_resource_value()
@@ -158,7 +169,7 @@ class KubeResource(Resource, CmdTaskMixin):
 
     def delete(self):
         'delete node by configuration key'
-        #todo@rain: to support delete entired resource and completion cache
+        # todo@rain: to support delete entired resource and completion cache
         if 'completion' in self._get_params():
             resource = self._get_one_resource_value()
             namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)

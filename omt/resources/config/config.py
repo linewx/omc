@@ -12,3 +12,4 @@ class Config(Resource, CmdTaskMixin):
 
 
     def sync_version(self):
+        pass
