@@ -44,6 +44,7 @@ class KubernetesClient(CmdTaskMixin):
         result = self.run_cmd(cmd)
 
     def edit(self, resource_type: str, resource_name: str, namespace: str):
+        resource_type = self.reconcile_resource_type(resource_type)
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
         self.run_cmd("kubectl %(config)s edit %(resource_type)s %(resource_name)s --namespace %(namespace)s" % locals())
 
@@ -57,12 +58,14 @@ class KubernetesClient(CmdTaskMixin):
         self.run_cmd(cmd)
 
     def upload(self, resource_name, namespace, local_dir, remote_dir, container=None):
+
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
         container_options = '' if not container else '-c ' + container
         cmd = "kubectl %(config)s cp %(container_options)s %(local_dir)s %(namespace)s/%(resource_name)s:%(remote_dir)s" % locals()
         self.run_cmd(cmd)
 
     def exec(self, resource_type, resource_name, namespace, command, container=None, stdin=True):
+        resource_type = self.reconcile_resource_type(resource_type)
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
         interactive_option = '-it' if stdin else ''
         container_options = '' if not container else '-c ' + container
@@ -70,6 +73,7 @@ class KubernetesClient(CmdTaskMixin):
         self.run_cmd(cmd)
 
     def get(self, resource_type, resource_name='', namespace='all', output='yaml'):
+        resource_type = self.reconcile_resource_type(resource_type)
         resource_name = '' if not resource_name else resource_name
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
         namespace_options = ''
@@ -85,6 +89,7 @@ class KubernetesClient(CmdTaskMixin):
         return result.stdout.decode('UTF-8')
 
     def describe(self, resource_type, resource_name=None, namespace='all'):
+        resource_type = self.reconcile_resource_type(resource_type)
         config = ' --kubeconfig %s ' % self.config_file if self.config_file else ''
         namespace_options = ''
         if namespace == 'all':
@@ -96,6 +101,16 @@ class KubernetesClient(CmdTaskMixin):
         cmd = 'kubectl %(config)s describe %(resource_type)s %(resource_name)s %(namespace_options)s' % locals()
         result = self.run_cmd(cmd, capture_output=True, verbose=False)
         return result.stdout.decode("UTF-8")
+
+    def reconcile_resource_type(self, resource_type):
+        resource_type_mapping = {
+            'config_map': 'configmap'
+        }
+
+        if resource_type in resource_type_mapping:
+            return resource_type_mapping[resource_type]
+        else:
+            return resource_type
 
 
 if __name__ == '__main__':

@@ -13,7 +13,7 @@ install_requires = [
 
 setup(
     name='omc',
-    version="0.1.2",
+    version="0.1.3",
     description='oh my command',
     license='MIT',
     author='Lu Ganlin',

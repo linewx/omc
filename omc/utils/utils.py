@@ -111,7 +111,7 @@ def get_obj_value(obj, key):
     if not key:
         return None
 
-    first_attr, others = extract_first_attr(key)
+    first_attr, others,delimiter = extract_first_attr(key)
 
     if first_attr:
         if isinstance(obj, dict):
@@ -132,9 +132,9 @@ def extract_first_attr(key):
     key = key.strip('[].')
     for index in range(0, len(key)):
         if key[index] in '[].':
-            return key[:index], key[index:].strip('[].')
+            return key[:index], key[index:].strip('[].'), key[index]
 
-    return key, None
+    return key, None, None
 
 
 def get_all_dict_Keys(obj, paths=[]):
@@ -151,18 +151,52 @@ def get_all_dict_Keys(obj, paths=[]):
         paths.extend(['[0].' + one for one in subpaths])
 
 
+def build_object(key, value, init_object={}):
+    # todo: to support array
+    first,others,delimiter = extract_first_attr(key)
+
+    if others is None:
+        # build_object('a', 'b')
+        init_object[key] = value
+        return init_object
+    elif delimiter == '.':
+        # build_object('a.b', 'c')
+        return {first: build_object(others, value, {})}
+    else:
+        if isinstance(init_object, list):
+            index = int(first)
+            if index < len(init_object):
+                init_object[int(first)] = build_object(others, value, {})
+                return init_object
+            elif index == len(init_object):
+                init_object.append(build_object(others, value, {}))
+                return init_object
+            else:
+                raise Exception('out of range')
+        else:
+            # build_object('a[0].b', 'c')
+            init_object = {first: build_object(others, value, [])}
+            return init_object
+
+
 if __name__ == '__main__':
     import json
 
-    obj = json.loads('{"a":"a", "b": [{"e": "sdfsdf"}, "d"]}')
-    set_obj_value(obj, 'b[0].e', 'test')
-    delete_obj_key(obj, 'b[0].e')
-    print(obj)
-    print(get_obj_value(obj, 'b[0].e'))
-
-    paths = []
-    get_all_dict_Keys(obj, paths)
-    print(paths)
+    # obj = json.loads('{"a":"a", "b": [{"e": "sdfsdf"}, "d"]}')
+    # set_obj_value(obj, 'b[0].e', 'test')
+    # delete_obj_key(obj, 'b[0].e')
+    # print(obj)
+    # print(get_obj_value(obj, 'b[0].e'))
+    #
+    # paths = []
+    # get_all_dict_Keys(obj, paths)
+    # print(paths)
+    #
+    # #result = build_object('a.b.c', 'value')
+    # #print(result)
     # first,other = (extract_first_attr('a[1].b'))
     # second,other2 = extract_first_attr(other)
     # print(extract_first_attr(other2))
+
+    the_object = (build_object('a[0].c.d', 'b'))
+    print(get_obj_value(the_object, 'a[0].c.d'))

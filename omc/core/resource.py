@@ -22,6 +22,12 @@ class Resource:
         self.context = context
         # set default resoure context
         self.context[self._get_resource_name()] = []
+
+        # init resource path
+        if 'resource_name_path' in self.context:
+            self.context['resource_name_path'].append(self._get_resource_name())
+        else:
+            self.context['resource_name_path'] = [self._get_resource_name()]
         self.logger = logging.getLogger('.'.join([self.__module__, self.__class__.__name__]))
         self.has_params = None
         self.type = type
@@ -114,6 +120,12 @@ class Resource:
     # system methods, don't modify!!!
     def _get_resource_name(self):
         return self.__class__.__name__.lower()
+
+    def _get_parent_resource_name(self):
+        if len(self.context['resource_name_path']) > 2:
+            return self.context['resource_name_path'][-2]
+        else:
+            return None
 
     def _get_resource_values(self, resource_name=None):
         resource_name = resource_name if resource_name is not None else self._get_resource_name()
@@ -280,6 +292,7 @@ class Resource:
 
     def help(self):
         self._help()
+
 
 if __name__ == '__main__':
     Resource.__name__
