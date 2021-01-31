@@ -48,11 +48,11 @@ class KubeNodeResource(Resource, CmdTaskMixin):
         results.append(super()._completion(False))
 
         if not self._have_resource_value():
-            parent_resource = self._get_one_resource_value(self._get_kube_resource_type())
-            namespace = self.client.get_namespace(self._get_kube_api_resource_type(), parent_resource)
-            # result = self._read_namespaced_resource(parent_resource, namespace)
+            # parent_resource = self._get_one_resource_value(self._get_kube_resource_type())
+            # namespace = self.client.get_namespace(self._get_kube_api_resource_type(), parent_resource)
 
-            completion_file_name = pkg_resources.resource_filename('omc.resources.kube.%(parent_resource)s', '_%(parent_resource)s_completion.json')
+            kube_resource_type = self._get_kube_resource_type()
+            completion_file_name = pkg_resources.resource_filename('omc.resources.kube.%(kube_resource_type)s' % locals(), '_%(kube_resource_type)s_completion.json' % locals())
             prompts = []
             # get_all_dict_Keys(result.to_dict(), prompts)
             with open(completion_file_name) as f:
