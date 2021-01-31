@@ -11,10 +11,10 @@ class Kube(Resource, CmdTaskMixin):
     def _description(self):
         return 'The Kubernetes command-line tool'
 
-    @filecache(duration=600, file=Resource._get_cache_file_name)
+    @filecache(duration=-1, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=True):
         results = []
-        results.append(super()._completion(True))
+        results.append(super()._completion(False))
         if not self._have_resource_value():
             if os.path.exists(settings.OMC_KUBE_CONFIG_DIR):
                 resources = os.listdir(settings.OMC_KUBE_CONFIG_DIR)

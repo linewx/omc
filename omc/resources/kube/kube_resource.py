@@ -48,7 +48,7 @@ class KubeResource(Resource, CmdTaskMixin):
 
         if not self._have_resource_value():
             ret = self._list_resource_for_all_namespaces()
-            results.extend(self._get_completion([one.metadata.name for one in ret.items], True))
+            results.extend(self._get_completion([get_obj_value(one, 'metadata.name') for one in ret.get('items')], True))
 
         return "\n".join(results)
 
