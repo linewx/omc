@@ -3,6 +3,9 @@ import re
 
 from kubernetes import client, config
 from omc.common import CmdTaskMixin
+from functools import wraps
+
+from omc.utils import utils
 
 
 class KubernetesClient(CmdTaskMixin):
@@ -22,14 +25,24 @@ class KubernetesClient(CmdTaskMixin):
     def __getattr__(self, item: str):
         for one_instance in self.client_instances:
             if hasattr(one_instance, item):
-                return getattr(one_instance, item)
+                f = getattr(one_instance, item)
+                @wraps(f)
+                def wrapper(*args, **kwds):
+                    if kwds is not None and '_preload_content' in kwds:
+                        return f(*args, **kwds)
+                    else:
+                        result = f(*args, **kwds, _preload_content=False)
+                        the_result = json.loads(result.data.decode('UTF-8'))
+                        return the_result
+
+                return wrapper
 
     def get_namespace(self, resource_type: str, resource_name: str):
         list_namespaces = getattr(self, "list_%s_for_all_namespaces" % resource_type)
         all_namespaces = list_namespaces()
-        for one in all_namespaces.items:
-            if one.metadata.name == resource_name:
-                return one.metadata.namespace
+        for one in all_namespaces.get('items'):
+            if utils.get_obj_value(one, 'metadata.name') == resource_name:
+                return utils.get_obj_value(one, 'metadata.namespace')
 
     ##################################
     ###### kubectl impl ##############
