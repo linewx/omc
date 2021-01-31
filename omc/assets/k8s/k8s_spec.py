@@ -81,5 +81,7 @@ if __name__ == '__main__':
 
     # pprint(spec._get_one_definition_properties("io.k8s.api.apps.v1.Deployment"))
     # pprint(spec.gen_definition_tree("io.k8s.api.apps.v1.Deployment"))
-    pprint(spec.gen_sample("io.k8s.api.apps.v1.Deployment"))
+    resource = 'deployment'
+    with open('/Users/luganlin/git/mf/omc/omc/resources/kube/%s/_%s_completion.json' % (resource, resource), 'w') as f:
+        json.dump(spec.gen_sample("io.k8s.api.apps.v1.%s" % resource.capitalize()), f, indent=2)
     # pprint(spec._get_one_definition_type("io.k8s.api.apps.v1.Deployment"))

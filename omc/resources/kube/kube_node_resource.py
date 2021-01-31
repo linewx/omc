@@ -2,6 +2,8 @@ import json
 import os
 from datetime import datetime
 
+import pkg_resources
+
 from omc.core.decorator import filecache
 
 from omc.config import settings
@@ -48,10 +50,15 @@ class KubeNodeResource(Resource, CmdTaskMixin):
         if not self._have_resource_value():
             parent_resource = self._get_one_resource_value(self._get_kube_resource_type())
             namespace = self.client.get_namespace(self._get_kube_api_resource_type(), parent_resource)
-            result = self._read_namespaced_resource(parent_resource, namespace)
+            # result = self._read_namespaced_resource(parent_resource, namespace)
+
+            completion_file_name = pkg_resources.resource_filename('omc.resources.kube.%(parent_resource)s', '_%(parent_resource)s_completion.json')
             prompts = []
-            get_all_dict_Keys(result.to_dict(), prompts)
-            results.extend(self._get_completion(prompts))
+            # get_all_dict_Keys(result.to_dict(), prompts)
+            with open(completion_file_name) as f:
+                result = json.load(f)
+                get_all_dict_Keys(result, prompts)
+                results.extend(self._get_completion(prompts))
 
         return "\n".join(results)
 
@@ -185,3 +192,7 @@ class KubeNodeResource(Resource, CmdTaskMixin):
             self.client.apply(config_file)
         else:
             raise Exception("no config file found")
+
+if __name__ ==  '__main__':
+    resource = pkg_resources.resource_filename('omc.resources.kube.deployment', '_deployment_completion.json')
+    print(resource)
