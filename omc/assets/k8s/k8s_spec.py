@@ -51,8 +51,25 @@ class K8sSpec:
             }
         return results
 
-    def gen_sample(self, resource_type):
-        pass
+    def gen_sample(self, root_node):
+        properties = self._get_one_definition_properties(root_node)
+        results = {}
+        if properties:
+            for one_property_name, one_property_value in properties.items():
+                if '$ref' in one_property_value:
+                    results[one_property_name] = self.gen_sample(one_property_value['$ref'].replace('#/definitions/', ''))
+                elif one_property_value.get('type') == 'array':
+                    items =  one_property_value['items']
+                    if '$ref' in  items:
+                        results[one_property_name] = [self.gen_sample(items['$ref'].replace('#/definitions/', ''))]
+
+                    else:
+                        results[one_property_name] = ['']
+                else:
+                    results[one_property_name] = ''
+        else:
+            return ''
+        return results
 
 
 def pprint(obj):
@@ -63,5 +80,6 @@ if __name__ == '__main__':
     spec = K8sSpec('/Users/luganlin/git/mf/omc/omc/assets/k8s/swagger.json')
 
     # pprint(spec._get_one_definition_properties("io.k8s.api.apps.v1.Deployment"))
-    pprint(spec.gen_definition_tree("io.k8s.api.apps.v1.Deployment"))
+    # pprint(spec.gen_definition_tree("io.k8s.api.apps.v1.Deployment"))
+    pprint(spec.gen_sample("io.k8s.api.apps.v1.Deployment"))
     # pprint(spec._get_one_definition_type("io.k8s.api.apps.v1.Deployment"))
