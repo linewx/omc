@@ -78,7 +78,7 @@ def set_obj_value(obj, key, value):
     if not key:
         return None
 
-    first_attr, others = extract_first_attr(key)
+    first_attr, others,delimiter = extract_first_attr(key)
 
     if not others:
         # do set value
@@ -157,7 +157,14 @@ def build_object(key, value, init_object={}):
 
     if others is None:
         # build_object('a', 'b')
-        init_object[key] = value
+        if isinstance(init_object, list):
+            index = int(first)
+            if index < len(init_object):
+                init_object[index] = value
+            elif index == len(init_object):
+                init_object.append(value)
+        else:
+            init_object[key] = value
         return init_object
     elif delimiter == '.':
         # build_object('a.b', 'c')
@@ -198,5 +205,8 @@ if __name__ == '__main__':
     # second,other2 = extract_first_attr(other)
     # print(extract_first_attr(other2))
 
-    the_object = (build_object('a[0].c.d', 'b'))
-    print(get_obj_value(the_object, 'a[0].c.d'))
+    # the_object = (build_object('a[0].c.d', 'b'))
+    # print(get_obj_value(the_object, 'a[0].c.d'))
+    the_object = (build_object('a[0]', {'a': 'b'}))
+    print(the_object)
+    # print(json.loads('b'))

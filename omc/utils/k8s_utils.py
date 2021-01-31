@@ -1,3 +1,6 @@
+import json
+import re
+
 from kubernetes import client, config
 from omc.common import CmdTaskMixin
 
@@ -113,13 +116,357 @@ class KubernetesClient(CmdTaskMixin):
             return resource_type
 
 
+# https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md
+# openapi spec https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/swagger.json
+#
+
+'''
+{
+    "spec": {
+        "template": {
+            "spec": {
+                "$setElementOrder/containers": [
+                    {
+                        "name": "idm"
+                    }
+                ],
+                "containers": [
+                    {
+                        "$setElementOrder/env": [
+                            {
+                                "name": "EXTERNAL_NAME"
+                            },
+                            {
+                                "name": "EXTERNAL_NAME1"
+                            },
+                            {
+                                "name": "IDM_MOUNT_ROOT"
+                            },
+                            {
+                                "name": "JVM_MAX_SIZE"
+                            },
+                            {
+                                "name": "CATALINA_OPTS"
+                            },
+                            {
+                                "name": "HPSSO_INIT_STRING"
+                            },
+                            {
+                                "name": "SAML2_ENABLE"
+                            },
+                            {
+                                "name": "SAML_KEYSTORE_PASSWORD_KEY"
+                            },
+                            {
+                                "name": "saml_keystore_password_key"
+                            }
+                        ],
+                        "env": [
+                            {
+                                "name": "EXTERNAL_NAME1",
+                                "value": "idm-svc1"
+                            }
+                        ],
+                        "name": "idm"
+                    }
+                ]
+            }
+        }
+    }
+}
+'''
+
+
+class StrategicMergePatch:
+    _instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+    def __init__(self):
+        self.api_spec = {
+            'spec.template.spec.containers': {
+                "type": "array",
+                "x-kubernetes-patch-merge-key": "name",
+                "x-kubernetes-patch-strategy": "merge"
+            },
+            'spec.template.spec.containers.env': {
+                "type": "array",
+                "x-kubernetes-patch-merge-key": "name",
+                "x-kubernetes-patch-strategy": "merge"
+            },
+
+        }
+
+    def delete_obj_key(self, obj, key):
+        if not key:
+            return None
+
+        first_attr, others = self.extract_first_attr(key)
+
+        if not others:
+            # do set value
+
+            if first_attr:
+                if isinstance(obj, dict):
+                    # obj.pop(key, None)
+                    del obj[key]
+                elif isinstance(obj, list):
+                    del obj[int(first_attr)]
+                else:
+                    try:
+                        delattr(obj, first_attr)
+                    except:
+                        setattr(obj, first_attr, None)
+
+                return
+        else:
+            # do get value
+
+            if first_attr:
+                if isinstance(obj, dict):
+                    first_value = obj.get(first_attr)
+                elif isinstance(obj, list):
+                    first_value = obj[int(first_attr)]
+                else:
+                    first_value = getattr(obj, first_attr)
+
+                self.delete_obj_key(first_value, others)
+
+    def set_obj_value(self, obj, key, value):
+        # e.g. get pod.data.ips[0]
+        if not key:
+            return None
+
+        first_attr, others, delimiter = self.extract_first_attr(key)
+
+        if not others:
+            # do set value
+
+            if first_attr:
+                if isinstance(obj, dict):
+                    obj[first_attr] = value
+                elif isinstance(obj, list):
+                    obj[int(first_attr)] = value
+                else:
+                    setattr(obj, first_attr, value)
+
+                return
+        else:
+            # do get value
+
+            if first_attr:
+                if isinstance(obj, dict):
+                    first_value = obj.get(first_attr)
+                elif isinstance(obj, list):
+                    first_value = obj[int(first_attr)]
+                else:
+                    first_value = getattr(obj, first_attr)
+
+                self.set_obj_value(first_value, others, value)
+
+    def get_obj_value(self, obj, key):
+        # e.g. get pod.data.ips[0]
+        if not key:
+            return None
+
+        first_attr, others, delimiter = self.extract_first_attr(key)
+
+        if first_attr:
+            if isinstance(obj, dict):
+                first_value = obj.get(first_attr)
+            elif isinstance(obj, list):
+                first_value = obj[int(first_attr)]
+            else:
+                first_value = getattr(obj, first_attr)
+
+            if not others:
+                return first_value
+
+            else:
+                return self.get_obj_value(first_value, others)
+
+    def extract_first_attr(self, key):
+        key = key.strip('[].')
+        for index in range(0, len(key)):
+            if key[index] in '[].':
+                return key[:index], key[index:].strip('[].'), key[index]
+
+        return key, None, None
+
+    def get_all_dict_Keys(self, obj, paths=[]):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                paths.append(k)
+                subpaths = []
+                self.get_all_dict_Keys(v, subpaths)
+                paths.extend([k + one if one.startswith('[') else k + '.' + one for one in subpaths])
+        elif isinstance(obj, list):
+            paths.append('[0]')
+            subpaths = []
+            self.get_all_dict_Keys(obj[0], subpaths)
+            paths.extend(['[0].' + one for one in subpaths])
+
+    def build_object(self, key, value, init_object={}):
+        # todo: to support array
+        first, others, delimiter = self.extract_first_attr(key)
+
+        if others is None:
+            # build_object('a', 'b')
+            if isinstance(init_object, list):
+                index = int(first)
+                if index < len(init_object):
+                    init_object[index] = value
+                elif index == len(init_object):
+                    init_object.append(value)
+            else:
+                init_object[key] = value
+            return init_object
+        elif delimiter == '.':
+            # build_object('a.b', 'c')
+            return {first: self.build_object(others, value, {})}
+        else:
+            if isinstance(init_object, list):
+                index = int(first)
+                if index < len(init_object):
+                    init_object[int(first)] = self.build_object(others, value, {})
+                    return init_object
+                elif index == len(init_object):
+                    init_object.append(self.build_object(others, value, {}))
+                    return init_object
+                else:
+                    raise Exception('out of range')
+            else:
+                # build_object('a[0].b', 'c')
+                init_object = {first: self.build_object(others, value, [])}
+                return init_object
+
+    def flatten_key(self, key):
+        return re.sub("\[\d+\]", '', key)
+
+    def parse_one_key(self, key):
+        is_array = False
+        index = -1
+        key = key
+        if '[' in key and ']' in key:
+            is_array = True
+            parsed_key, parsed_index = re.findall('(\w+)\[(\d*)\]', key)[0]
+            key = parsed_key
+
+            if parsed_index:
+                index = int(parsed_index)
+            else:
+                index = -1
+
+        return key, is_array, index
+        # return {
+        #     'key': key,
+        #     'is_array': is_array,
+        #     'index': index
+        # }
+
+    def gen_strategic_merge_patch(self, origin, key_array, value, action, path):
+        '''
+        'spec.template.spec.containers[0].env[1]',
+         {'name': 'name1', 'value': 'value1'}
+        '''
+        keys = key_array.copy()
+        one_key = keys.pop(0)
+        current_path = path.copy()  # raw path, with array index
+        current_path.append(one_key)
+
+        the_key, is_array, index = self.parse_one_key(one_key)
+        current_key_path = '.'.join(
+            [*path, the_key])  # with old array index, without current index, for get object value
+        current_flatten_path = self.flatten_key('.'.join([*path, the_key]))  # no array index, only for api spec usage
+
+        if not is_array:
+            if not keys:
+                # no key any more
+                if action == 'set':
+                    return {the_key: value}
+                elif action == 'delete':
+                    return {the_key: None}
+            else:
+                return {the_key: self.gen_strategic_merge_patch(origin, keys, value, action, current_path)}
+        else:
+
+            the_value = value
+
+            if keys:
+                the_value = self.gen_strategic_merge_patch(origin, keys, the_value, action, current_path)
+
+            if current_flatten_path in self.api_spec:
+                # for array, we have stratgic merge rule
+                current_value = self.get_obj_value(origin, current_key_path)
+
+                merge_key = self.api_spec[current_flatten_path]['x-kubernetes-patch-merge-key']
+                patch_strategy = self.api_spec[current_flatten_path]['x-kubernetes-patch-strategy']
+                results = {}
+
+                '''
+                 "$setElementOrder/containers": [
+                    {
+                        "name": "idm"
+                    }
+                ],
+                '''
+                if keys:
+                    # has children
+                    results['$setElementOrder/%s' % the_key] = [{merge_key: one.get(merge_key)} for one in
+                                                                current_value]
+                    results[the_key] = [
+                        {
+                            merge_key: current_value[index].get(merge_key),
+                            **the_value
+                        }
+                    ]
+
+                if not keys:
+                    results['$setElementOrder/%s' % the_key] = [{merge_key: one.get(merge_key)} for one in
+                                                                current_value]
+                    if action == 'set':
+                        one_item = []
+                        one_item.insert(index, value)
+                        results[the_key] = one_item
+                    elif action == 'delete':
+                        one_item = []
+                        # one_item.insert(index, value)
+                        one_item.append({"$patch": 'delete', **value})
+                        results[the_key] = one_item
+                return results
+
+            else:
+                # if no merge rule, merge normally
+                current_value = self.get_obj_value(origin, current_key_path)
+                current_value = current_value if current_value else []
+                current_value.insert(index, the_value)
+
+
 if __name__ == '__main__':
-    client = KubernetesClient("~/.omc/config/kube/nightly1/config")
-    the_namespace = client.get_namespace("service", "smarta-smart-ticket-svc")
-    print(the_namespace)
+    # client = KubernetesClient("~/.omc/config/kube/nightly1/config")
+    # the_namespace = client.get_namespace("service", "smarta-smart-ticket-svc")
+    # print(the_namespace)
     #
     # print(client.list_config_map_for_all_namespaces(watch=False))
     # print(client.list_pod_for_all_namespaces(watch=False))
     # print(client.list_deployment_for_all_namespaces(watch=False))
     # print(client.list_service_for_all_namespaces(watch=False))
     # print(client.list_endpoints_for_all_namespaces(watch=False))
+    smp = StrategicMergePatch()
+    origin = None
+    with open('/Users/luganlin/git/mf/omc/omc/fixtures/k8s/deployment_sample.json') as f:
+        origin = json.load(f)
+    result = smp.gen_strategic_merge_patch(origin, 'spec.template.spec.containers[0].env[]'.split('.'),
+                                           {'name': 'name1', 'value': 'value1'}, 'delete', [])
+
+    # print(json.dumps(result, indent=2))
+
+    result1 = smp.gen_strategic_merge_patch(origin, 'spec.template.spec.containers[0].livenessProbe'.split('.'),
+                                            'value1', 'delete', [])
+
+    print(json.dumps(result1, indent=2))
+    # print(smp.gen_strategic_merge_patch(origin, 'spec.template.spec.containers[0].env',{'name': 'name1', 'value': 'value1'}))
