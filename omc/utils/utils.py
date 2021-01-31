@@ -41,7 +41,7 @@ def delete_obj_key(obj, key):
     if not key:
         return None
 
-    first_attr, others = extract_first_attr(key)
+    first_attr, others, delimiter = extract_first_attr(key)
 
     if not others:
         # do set value

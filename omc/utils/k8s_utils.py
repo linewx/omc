@@ -218,7 +218,7 @@ class StrategicMergePatch:
         if not key:
             return None
 
-        first_attr, others = self.extract_first_attr(key)
+        first_attr, others,delimiter = self.extract_first_attr(key)
 
         if not others:
             # do set value

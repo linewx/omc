@@ -41,7 +41,7 @@ class KubeResource(Resource, CmdTaskMixin):
         list_func = getattr(self.client, 'list_%s_for_all_namespaces' % self._get_kube_api_resource_type())
         return list_func()
 
-    @filecache(duration=60 * 5, file=Resource._get_cache_file_name)
+    @filecache(duration=60 * 60, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=True):
         results = []
         results.append(super()._completion(False))
