@@ -87,7 +87,7 @@ class KubeNodeResource(Resource, CmdTaskMixin):
         # https://stackoverflow.com/questions/36307950/kubernetes-api-call-equivalent-to-kubectl-apply
         if 'completion' in self._get_params():
             resource = self._get_one_resource_value()
-            namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
+            namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
             result = self._read_namespaced_resource(resource, namespace)
             prompts = []
             get_all_dict_Keys(result.to_dict(), prompts)
@@ -119,7 +119,7 @@ class KubeNodeResource(Resource, CmdTaskMixin):
         # todo@rain: to support delete entired resource and completion cache
         if 'completion' in self._get_params():
             resource = self._get_one_resource_value()
-            namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
+            namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
             result = self._read_namespaced_resource(resource, namespace)
             prompts = []
             get_all_dict_Keys(result.to_dict(), prompts)
@@ -149,14 +149,14 @@ class KubeNodeResource(Resource, CmdTaskMixin):
     def _edit(self):
         'Edit a resource from the default editor.'
         resource = self._get_one_resource_value(self._get_kube_resource_type())
-        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource)
+        namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
 
         self.client.edit(self._get_kube_resource_type(), resource, namespace)
 
     def _save(self):
         'save configuration in file cache to be restored'
         resource_name = self._get_one_resource_value()
-        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+        namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource_name)
         kube_instance = self._get_one_resource_value("kube")
         if not kube_instance:
             kube_instance = 'local'
@@ -179,7 +179,7 @@ class KubeNodeResource(Resource, CmdTaskMixin):
     def _restore(self):
         'restore configuration saved in file cache'
         resource_name = self._get_one_resource_value()
-        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+        namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource_name)
         kube_instance = self._get_one_resource_value("kube")
         if not kube_instance:
             kube_instance = 'local'

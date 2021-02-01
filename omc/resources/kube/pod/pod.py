@@ -13,7 +13,7 @@ class Pod(KubeResource):
         args = parser.parse_args(self._get_action_params())
 
         resource_name = self._get_one_resource_value()
-        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+        namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource_name)
         self.client.download(resource_name, namespace, args.local, args.remote)
 
     def upload(self):
@@ -23,5 +23,5 @@ class Pod(KubeResource):
         args = parser.parse_args(self._get_action_params())
 
         resource_name = self._get_one_resource_value()
-        namespace = self.client.get_namespace(self._get_kube_resource_type(), resource_name)
+        namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource_name)
         self.client.upload(resource_name, namespace, args.local, args.remote)
