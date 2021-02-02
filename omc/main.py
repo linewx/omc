@@ -6,13 +6,25 @@ import sys
 import traceback
 
 import pkg_resources
+
+from omc.core import built_in_resources
 from omc.core.decorator import filecache
 
 from omc.config import settings
 
-
 # plugin implementation
 # https://packaging.python.org/guides/creating-and-discovering-plugins/
+import importlib
+import pkgutil
+
+
+# discovered_plugins = {
+#     name: importlib.import_module(name)
+#     for finder, name, ispkg
+#     in pkgutil.iter_modules()
+#     if name.startswith('omc_')
+# }
+
 
 def usage():
     print('''omc resource action params ''')
@@ -25,8 +37,11 @@ def main():
     resource_type = sys.argv[1]
 
     try:
-        mod = __import__(".".join(['omc', 'resources', resource_type, resource_type]),
-                         fromlist=[resource_type.capitalize()])
+        if resource_type in built_in_resources:
+            mod = __import__(".".join(['omc', 'resources', resource_type, resource_type]),
+                             fromlist=[resource_type.capitalize()])
+        else:
+            mod = __import__(".".join(['omc_' + resource_type, resource_type]), fromlist=[resource_type.capitalize()])
         clazz = getattr(mod, resource_type.capitalize())
         context = {
             'all': sys.argv,

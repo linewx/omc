@@ -4,4 +4,4 @@
 
 pip uninstall -y omc
 
-pip install -e .
+pip install .

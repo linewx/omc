@@ -6,7 +6,11 @@ import os
 class CmdTaskMixin:
 
     def run_cmd(self, cmd, cwd=None, env=None, block=True, capture_output=False, verbose=True, *args, **kwargs):
-        the_env = env if not env else os.environ
+        the_env = {}
+        the_env.update(os.environ)
+        if env is not None:
+            the_env.update(env)
+
         try:
             cwd = cwd if cwd is None else cwd.replace("\\", "/")
 

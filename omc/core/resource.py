@@ -159,12 +159,12 @@ class Resource:
 
     def _get_submodules(self):
         # for example, module name is 'omc.resources.jmx.jmx', submodules should be other folder within omc.resources.jmx folder
-        module_path = self.__module__.split('.')
-        module_path.pop()
-        current_module = module_path.pop()
-        all_resources = (pkg_resources.resource_listdir('.'.join(module_path), current_module))
+        # module_path = self.__module__.split('.')
+        # module_path.pop()
+        # current_module = module_path.pop()
+        all_resources = (pkg_resources.resource_listdir(self.__module__, '.'))
         filterd_modules = [one for one in all_resources if
-                           pkg_resources.resource_isdir('.'.join(module_path) + '.' + current_module,
+                           pkg_resources.resource_isdir(self.__module__,
                                                         one) is True and one not in ['__pycache__']]
 
         return filterd_modules
