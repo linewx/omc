@@ -49,9 +49,12 @@ def delete_obj_key(obj, key):
         if first_attr:
             if isinstance(obj, dict):
                 # obj.pop(key, None)
-                del obj[key]
+                if key in obj:
+                    del obj[key]
             elif isinstance(obj, list):
-                del obj[int(first_attr)]
+                index = int(first_attr)
+                if index < len(obj):
+                    del obj[index]
             else:
                 try:
                     delattr(obj, first_attr)

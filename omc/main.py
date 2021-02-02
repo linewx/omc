@@ -17,7 +17,7 @@ def usage():
 
 def main():
     FORMAT = "[%(filename)s:%(lineno)s - %(funcName)s ] %(message)s"
-    logging.basicConfig(format=FORMAT)
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
     logger = logging.getLogger(__name__)
     resource_type = sys.argv[1]
 

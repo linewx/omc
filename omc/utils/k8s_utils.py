@@ -26,6 +26,7 @@ class KubernetesClient(CmdTaskMixin):
         for one_instance in self.client_instances:
             if hasattr(one_instance, item):
                 f = getattr(one_instance, item)
+
                 @wraps(f)
                 def wrapper(*args, **kwds):
                     if kwds is not None and '_preload_content' in kwds:
@@ -218,7 +219,7 @@ class StrategicMergePatch:
         if not key:
             return None
 
-        first_attr, others,delimiter = self.extract_first_attr(key)
+        first_attr, others, delimiter = self.extract_first_attr(key)
 
         if not others:
             # do set value
@@ -409,9 +410,6 @@ class StrategicMergePatch:
 
             the_value = value
 
-            if keys:
-                the_value = self.gen_strategic_merge_patch(origin, keys, the_value, action, current_path)
-
             if current_flatten_path in self.api_spec:
                 # for array, we have stratgic merge rule
                 current_value = self.get_obj_value(origin, current_key_path)
@@ -434,7 +432,7 @@ class StrategicMergePatch:
                     results[the_key] = [
                         {
                             merge_key: current_value[index].get(merge_key),
-                            **the_value
+                            **self.gen_strategic_merge_patch(origin, keys, the_value, action, current_path)
                         }
                     ]
 
@@ -443,6 +441,8 @@ class StrategicMergePatch:
                                                                 current_value]
                     if action == 'set':
                         one_item = []
+                        if isinstance(value, dict):
+                            value = {**value, merge_key: current_value[index].get(merge_key)}
                         one_item.insert(index, value)
                         results[the_key] = one_item
                     elif action == 'delete':
@@ -471,15 +471,22 @@ if __name__ == '__main__':
     # print(client.list_endpoints_for_all_namespaces(watch=False))
     smp = StrategicMergePatch()
     origin = None
-    with open('/Users/luganlin/git/mf/omc/omc/fixtures/k8s/deployment_sample.json') as f:
+    with open('/Users/luganlin/git/mf/omc/omc/assets/k8s/deployment_sample.json') as f:
         origin = json.load(f)
-    result = smp.gen_strategic_merge_patch(origin, 'spec.template.spec.containers[0].env[]'.split('.'),
-                                           {'name': 'name1', 'value': 'value1'}, 'delete', [])
+    # result = smp.gen_strategic_merge_patch(origin, 'spec.template.spec.containers[0].env[]'.split('.'),
+    #                                        {'name': 'name1', 'value': 'value1'}, 'delete', [])
 
-    # print(json.dumps(result, indent=2))
-
+    # # print(json.dumps(result, indent=2))
+    #
     result1 = smp.gen_strategic_merge_patch(origin, 'spec.template.spec.containers[0].livenessProbe'.split('.'),
                                             'value1', 'delete', [])
 
     print(json.dumps(result1, indent=2))
+    value = json.loads('{"command": ["/bin/sh"], "args": ["-c", "while true; do echo hello; sleep 10;done"]}')
+    result2 = smp.gen_strategic_merge_patch(origin, 'spec.template.spec.containers[0]'.split('.'),
+                                            value, 'set', [])
+
+    print(json.dumps(result2, indent=2))
     # print(smp.gen_strategic_merge_patch(origin, 'spec.template.spec.containers[0].env',{'name': 'name1', 'value': 'value1'}))
+
+    # print(json.loads('{"command": ["/bin/sh"], "args": ["-c", "while true; do echo hello; sleep 10;done"]}'))

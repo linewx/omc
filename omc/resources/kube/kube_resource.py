@@ -48,7 +48,8 @@ class KubeResource(Resource, CmdTaskMixin):
 
         if not self._have_resource_value():
             ret = self._list_resource_for_all_namespaces()
-            results.extend(self._get_completion([get_obj_value(one, 'metadata.name') for one in ret.get('items')], True))
+            results.extend(
+                self._get_completion([get_obj_value(one, 'metadata.name') for one in ret.get('items')], True))
 
         return "\n".join(results)
 
@@ -227,8 +228,9 @@ class KubeResource(Resource, CmdTaskMixin):
         content = stream.getvalue()
 
         make_directory(cache_folder)
-        logging.info('saving yaml file to ' + os.path.join(cache_folder, resource_name + '.yaml'))
-        with open(os.path.join(cache_folder, resource_name + '.yaml'), 'w') as f:
+        config_file = os.path.join(cache_folder, resource_name + '.yaml')
+        logging.info('save %s %s to %s' % (self._get_kube_resource_type(), resource_name, config_file))
+        with open(config_file, 'w') as f:
             f.write(content)
 
     def restore(self):
@@ -244,10 +246,11 @@ class KubeResource(Resource, CmdTaskMixin):
 
         config_file = os.path.join(cache_folder, resource_name + '.yaml')
 
+        logging.info('restore %s %s from %s' % (self._get_kube_resource_type(), resource_name, config_file))
         if os.path.exists(config_file):
             self.client.apply(config_file)
         else:
-            raise Exception("no config file found")
+            raise Exception("config file %s not found" % config_file)
 
     def exec(self):
         'Execute a command in a container'
