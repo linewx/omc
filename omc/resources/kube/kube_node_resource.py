@@ -112,7 +112,6 @@ class KubeNodeResource(Resource, CmdTaskMixin):
                                                                                     config_value, 'set', [])
         new_result = patch_func(parent_resource, namespace, patch_object)
         print(new_result)
-        # print(get_obj_value(new_result, config_key))
 
     def delete(self):
         'delete node by configuration key'

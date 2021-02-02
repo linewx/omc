@@ -41,6 +41,15 @@ class KubeResource(Resource, CmdTaskMixin):
         list_func = getattr(self.client, 'list_%s_for_all_namespaces' % self._get_kube_api_resource_type())
         return list_func()
 
+    def _get_resource(self):
+        resource = self._get_one_resource_value()
+        namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
+        return self._read_namespaced_resource(resource, namespace)
+
+    def _get_namespace(self):
+        resource = self._get_one_resource_value()
+        return self.client.get_namespace(self._get_kube_api_resource_type(), resource)
+
     @filecache(duration=60 * 60, file=Resource._get_cache_file_name)
     def _completion(self, short_mode=True):
         results = []
@@ -127,73 +136,73 @@ class KubeResource(Resource, CmdTaskMixin):
         get_all_dict_Keys(result.to_dict(), prompts)
         return '\n'.join(self._get_completion(prompts))
 
-    def get(self):
-        'get resource by configuration key'
-        if 'completion' in self._get_params():
-            completion = self._get_config_key_completion()
-            print(completion)
-            return
-
-        resource = self._get_one_resource_value()
-        namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
-        result = self._read_namespaced_resource(resource, namespace)
-        params = self._get_action_params()
-
-        the_params = " ".join(params)
-
-        if not the_params.strip():
-            print(result)
-        else:
-            print(get_obj_value(result, the_params))
-
-    def set(self):
-        'update restore by configuration key'
-        if 'completion' in self._get_params():
-            resource = self._get_one_resource_value()
-            namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
-            result = self._read_namespaced_resource(resource, namespace)
-            prompts = []
-            get_all_dict_Keys(result.to_dict(), prompts)
-            self._print_completion(prompts)
-            return
-
-        resource = self._get_one_resource_value()
-        namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
-        result = self._read_namespaced_resource(resource, namespace)
-        params = self._get_action_params()
-        config_key = params[0]
-        config_value = params[1]
-        orig_value = get_obj_value(result, config_key)
-        # convert type
-        config_value = type(orig_value)(config_value)
-        set_obj_value(result, config_key, config_value)
-
-        # todo: use apply instead once apply provided
-        new_result = self.client.replace_namespaced_deployment(resource, namespace, result)
-        print(get_obj_value(new_result, config_key))
-
-    def delete(self):
-        'delete node by configuration key'
-        # todo@rain: to support delete entired resource and completion cache
-        if 'completion' in self._get_params():
-            resource = self._get_one_resource_value()
-            namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
-            result = self._read_namespaced_resource(resource, namespace)
-            prompts = []
-            get_all_dict_Keys(result.to_dict(), prompts)
-            self._print_completion(prompts)
-            return
-
-        resource = self._get_one_resource_value()
-        namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
-        result = self._read_namespaced_resource(resource, namespace)
-        params = self._get_action_params()
-        config_key = params[0]
-        # convert type
-        delete_obj_key(result, config_key)
-
-        # todo: use apply instead once apply provided
-        new_result = self.client.replace_namespaced_deployment(resource, namespace, result)
+    # def get(self):
+    #     'get resource by configuration key'
+    #     if 'completion' in self._get_params():
+    #         completion = self._get_config_key_completion()
+    #         print(completion)
+    #         return
+    #
+    #     resource = self._get_one_resource_value()
+    #     namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
+    #     result = self._read_namespaced_resource(resource, namespace)
+    #     params = self._get_action_params()
+    #
+    #     the_params = " ".join(params)
+    #
+    #     if not the_params.strip():
+    #         print(result)
+    #     else:
+    #         print(get_obj_value(result, the_params))
+    #
+    # def set(self):
+    #     'update restore by configuration key'
+    #     if 'completion' in self._get_params():
+    #         resource = self._get_one_resource_value()
+    #         namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
+    #         result = self._read_namespaced_resource(resource, namespace)
+    #         prompts = []
+    #         get_all_dict_Keys(result.to_dict(), prompts)
+    #         self._print_completion(prompts)
+    #         return
+    #
+    #     resource = self._get_one_resource_value()
+    #     namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
+    #     result = self._read_namespaced_resource(resource, namespace)
+    #     params = self._get_action_params()
+    #     config_key = params[0]
+    #     config_value = params[1]
+    #     orig_value = get_obj_value(result, config_key)
+    #     # convert type
+    #     config_value = type(orig_value)(config_value)
+    #     set_obj_value(result, config_key, config_value)
+    #
+    #     # todo: use apply instead once apply provided
+    #     new_result = self.client.replace_namespaced_deployment(resource, namespace, result)
+    #     print(get_obj_value(new_result, config_key))
+    #
+    # def delete(self):
+    #     'delete node by configuration key'
+    #     # todo@rain: to support delete entired resource and completion cache
+    #     if 'completion' in self._get_params():
+    #         resource = self._get_one_resource_value()
+    #         namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
+    #         result = self._read_namespaced_resource(resource, namespace)
+    #         prompts = []
+    #         get_all_dict_Keys(result.to_dict(), prompts)
+    #         self._print_completion(prompts)
+    #         return
+    #
+    #     resource = self._get_one_resource_value()
+    #     namespace = self.client.get_namespace(self._get_kube_api_resource_type(), resource)
+    #     result = self._read_namespaced_resource(resource, namespace)
+    #     params = self._get_action_params()
+    #     config_key = params[0]
+    #     # convert type
+    #     delete_obj_key(result, config_key)
+    #
+    #     # todo: use apply instead once apply provided
+    #     new_result = self.client.replace_namespaced_deployment(resource, namespace, result)
 
     def edit(self):
         'Edit a resource from the default editor.'
