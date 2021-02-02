@@ -11,6 +11,9 @@ from omc.core.decorator import filecache
 from omc.config import settings
 
 
+# plugin implementation
+# https://packaging.python.org/guides/creating-and-discovering-plugins/
+
 def usage():
     print('''omc resource action params ''')
 
