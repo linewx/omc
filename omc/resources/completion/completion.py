@@ -20,25 +20,23 @@ class Completion(Resource, CmdTaskMixin):
         results = []
         resources = (pkg_resources.resource_listdir('omc', 'resources'))
 
-
         # for built-in resources
         for resource_type in built_in_resources:
-
             mod = __import__(".".join(['omc', 'resources', resource_type, resource_type]),
                              fromlist=[resource_type.capitalize()])
             clazz = getattr(mod, resource_type.capitalize())
             results.append(resource_type + ":" + clazz({})._description())
 
         # for plugins
-        for finder,name,ispkg in pkgutil.iter_modules():
+        for finder, name, ispkg in pkgutil.iter_modules():
             if name.startswith('omc_'):
                 resource_type = name.replace('omc_', '').lower()
-                mod = __import__(".".join(['omc_' + resource_type, resource_type]), fromlist=[resource_type.capitalize()])
+                mod = __import__(".".join(['omc_' + resource_type, resource_type]),
+                                 fromlist=[resource_type.capitalize()])
                 clazz = getattr(mod, resource_type.capitalize())
                 results.append(resource_type + ":" + clazz({})._description())
 
         # }
-
 
         return "\n".join(results)
 
