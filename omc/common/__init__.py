@@ -1,6 +1,5 @@
-from dynaconf import settings
-import subprocess
 import os
+import subprocess
 
 
 class CmdTaskMixin:

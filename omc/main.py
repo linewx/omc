@@ -41,7 +41,7 @@ def main():
             mod = __import__(".".join(['omc', 'resources', resource_type, resource_type]),
                              fromlist=[resource_type.capitalize()])
         else:
-            mod = __import__(".".join(['omc_' + resource_type, resource_type]), fromlist=[resource_type.capitalize()])
+            mod = __import__(".".join(['omc_' + resource_type, resource_type, resource_type]), fromlist=[resource_type.capitalize()])
         clazz = getattr(mod, resource_type.capitalize())
         context = {
             'all': sys.argv,
