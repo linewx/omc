@@ -18,7 +18,6 @@ class Completion(Resource, CmdTaskMixin):
     @filecache(duration=-1, file=os.path.join(settings.OMC_COMPLETION_CACHE_DIR, 'completion'))
     def _get_resource_completion(self):
         results = []
-        resources = (pkg_resources.resource_listdir('omc', 'resources'))
 
         # for built-in resources
         for resource_type in built_in_resources:
@@ -31,7 +30,7 @@ class Completion(Resource, CmdTaskMixin):
         for finder, name, ispkg in pkgutil.iter_modules():
             if name.startswith('omc_'):
                 resource_type = name.replace('omc_', '').lower()
-                mod = __import__(".".join(['omc_' + resource_type, resource_type]),
+                mod = __import__(".".join(['omc_' + resource_type, resource_type, resource_type]),
                                  fromlist=[resource_type.capitalize()])
                 clazz = getattr(mod, resource_type.capitalize())
                 results.append(resource_type + ":" + clazz({})._description())

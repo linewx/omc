@@ -4,9 +4,6 @@ default:
   cache_dir: "@format {this.OMC_HOME}/cache"
   bin_dir: "@format {this.OMC_HOME}/bin"
   resource_config_dir: "@format {this.CONFIG_DIR}/resources"
-  ssh_config_file: "@format {env[HOME]}/.ssh/config"
-  omc_kube_config_dir: "@format {this.CONFIG_DIR}/kube"
-  omc_kube_cache_dir: "@format {this.CACHE_DIR}/kube"
   omc_completion_cache_dir: "@format {this.CACHE_DIR}/completion"
   db:
     drivername: sqlite
