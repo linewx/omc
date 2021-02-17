@@ -29,3 +29,38 @@ class UrlUtils:
 
     def get_port(self):
         return self.parsed_result.port
+
+
+def prompt(question, required=False, isBool=False, default=None):
+    while True:
+        result = input(question)
+        if required and result:
+            if isBool:
+                if result[0].lower() == 'y':
+                    return True
+                elif result[0].lower() == 'n':
+                    return False
+
+            else:
+                return result
+
+        elif required:
+            # result is None
+            if default is not None:
+                return default
+            else:
+                continue
+        else:
+            # not required
+            if isBool:
+                if result:
+                    if default is not None:
+                        return default
+                else:
+                    if result[0].lower() == 'y':
+                        return True
+                    elif result[0].lower() == 'n':
+                        return False
+
+            else:
+                return result
