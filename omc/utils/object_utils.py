@@ -1,3 +1,6 @@
+import json
+
+
 class ObjectUtils:
     # @staticmethod
     # def get_obj_value2(obj, key):
@@ -155,6 +158,9 @@ class ObjectUtils:
                 init_object = {first: ObjectUtils.build(others, value, [])}
                 return init_object
 
+    @staticmethod
+    def format(obj):
+        return json.dumps(obj, indent=2)
 
 if __name__ == '__main__':
     # obj = json.loads('{"a":"a", "b": [{"e": "sdfsdf"}, "d"]}')

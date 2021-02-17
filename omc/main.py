@@ -51,7 +51,7 @@ def main():
         clazz(context)._exec()
     except Exception as inst:
         traceback.print_exc()
-        usage()
+        # usage()
 
 
 if __name__ == '__main__':
