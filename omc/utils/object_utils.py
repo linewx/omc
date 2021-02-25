@@ -1,6 +1,6 @@
 import json
 
-from omc.utils import console
+from omc.core import console
 
 
 class ObjectUtils:
