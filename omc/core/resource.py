@@ -3,6 +3,8 @@
 import os
 
 import pkg_resources
+from omc.core import console
+
 from omc.config import settings
 
 import omc
@@ -37,8 +39,8 @@ class Resource:
     ################################################################
     # main method, system entrypoint
 
-    def _exec(self):
-        return self.__format(self.__execute())
+    def _exec(self, dry_run=False):
+        return self.__format(self.__execute(dry_run))
 
     ################################################################
     #################### private method ############################
@@ -46,13 +48,13 @@ class Resource:
     # private mehtod, only invoked in this class
     def __format(self, result):
         if self.type == 'cmd':
-            print(result)
+            console.log(result)
         elif self.type == 'web':
             return result
         else:
             raise Exception("unsupported type")
 
-    def __execute(self):
+    def __execute(self, dry_run=False):
         resource_name = self._get_resource_name()
         raw_command = self.context['all']
         index = self.context['index']
@@ -62,8 +64,10 @@ class Resource:
         while True:
             if not params:
                 # has no params, stop parsing then start to run default action
-                self._run()
-                break
+                if dry_run:
+                    return self._run
+
+                return self._run()
 
             else:
                 # has params
@@ -89,7 +93,7 @@ class Resource:
                         if hasattr(mod, next_value.capitalize()):
                             clazz = getattr(mod, next_value.capitalize())
                             instance = clazz(context)
-                            result = instance.__execute()
+                            result = instance.__execute(dry_run)
                             self._after_sub_resource()
                             return result
                         else:
@@ -104,6 +108,8 @@ class Resource:
                     action = getattr(self, next_value)
                     self.context['index'] += 1
                     self.context['action_params'] = raw_command[self.context['index'] + 1:]
+                    if dry_run:
+                        return action
                     return action()
                 else:
                     #
@@ -174,11 +180,11 @@ class Resource:
             for one in descriptions:
                 if type(one) == tuple or type(one) == list:
                     if not short_mode:
-                        print(":".join(one))
+                        console.log(":".join(one))
                     else:
-                        print(one[0])
+                        console.log(one[0])
                 else:
-                    print(one)
+                    console.log(one)
 
     def _get_completion(self, descriptions, short_mode=False):
         result = []
@@ -259,9 +265,9 @@ class Resource:
         except (ModuleNotFoundError, AttributeError) as inst:
             try:
                 action = getattr(self, params[0])
-                print(textwrap.dedent(action.__doc__))
+                console.log(textwrap.dedent(action.__doc__))
             except Exception as inst:
-                print(inst)
+                console.log(inst)
 
     ################################################################
     #################### public method #############################
@@ -285,7 +291,7 @@ class Resource:
             self._clean_completin_cache()
         # list candidates for completions in zsh style (a:"description for a" b:"description for b")
         try:
-            print(self._completion())
+            console.log(self._completion())
         except Exception as inst:
             # keep silent in completion mode
             return

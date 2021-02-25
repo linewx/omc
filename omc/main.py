@@ -27,7 +27,7 @@ import pkgutil
 
 
 def usage():
-    print('''omc resource action params ''')
+    console.log('''omc resource action params ''')
 
 
 def main():

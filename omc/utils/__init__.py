@@ -1,7 +1,6 @@
 import pkg_resources
 from urllib.parse import urlparse
 
-
 class UrlUtils:
     def __init__(self, url):
         self.url = url
@@ -64,3 +63,4 @@ def prompt(question, required=False, isBool=False, default=None):
 
             else:
                 return result
+

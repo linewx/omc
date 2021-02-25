@@ -1,5 +1,7 @@
 from flask import Flask
 
+from omc.core import console
+
 app = Flask(__name__)
 import omc
 import sys
@@ -18,7 +20,7 @@ def cmd(path):
     logger = logging.getLogger(__name__)
     argv = path.split('/')
     resource_type = argv[0]
-    print('################## resource type:' + resource_type + '##################')
+    console.log('################## resource type:' + resource_type + '##################')
     try:
         mod = __import__(".".join(['omc', 'resources', resource_type, resource_type]),
                          fromlist=[resource_type.capitalize()])

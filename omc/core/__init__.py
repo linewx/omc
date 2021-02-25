@@ -1,6 +1,7 @@
 import functools
 import os
 
+from omc.core.console import Console
 from omc.core.resource import Resource
 
 __all__ = ['Resource']
@@ -21,5 +22,5 @@ def simple_completion(prompts=None):
 
     return simple_completion_decorator
 
-
+console = Console()
 

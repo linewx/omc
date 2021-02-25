@@ -6,7 +6,7 @@ import pkg_resources
 
 from omc.common import CmdTaskMixin
 from omc.config import settings
-from omc.core import Resource, built_in_resources
+from omc.core import Resource, built_in_resources, console
 from omc.core.decorator import filecache
 
 
@@ -42,4 +42,4 @@ class Completion(Resource, CmdTaskMixin):
     def _run(self):
         if '--refresh' in self.context['all']:
             self._clean_completin_cache()
-        print(self._get_resource_completion())
+        console.log(self._get_resource_completion())

@@ -1,5 +1,7 @@
 import json
 
+from omc.utils import console
+
 
 class ObjectUtils:
     # @staticmethod
@@ -182,5 +184,5 @@ if __name__ == '__main__':
     # the_object = (build_object('a[0].c.d', 'b'))
     # print(get_obj_value(the_object, 'a[0].c.d'))
     the_object = (ObjectUtils.build('a[0]', {'a': 'b'}))
-    print(the_object)
+    console.log(the_object)
     # print(json.loads('b'))

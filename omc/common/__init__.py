@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+from omc.core import console
+
 
 class CmdTaskMixin:
 
@@ -14,7 +16,7 @@ class CmdTaskMixin:
             cwd = cwd if cwd is None else cwd.replace("\\", "/")
 
             if verbose:
-                print("cmd: %s, cwd: %s" % (cmd, cwd))
+                console.log("cmd: %s, cwd: %s" % (cmd, cwd))
 
             if block:
                 if capture_output:
@@ -39,8 +41,8 @@ class CompletionMixin:
             for one in descriptions:
                 if type(one) == tuple or type(one) == list:
                     if not short_mode:
-                        print(":".join(one))
+                        console.log(":".join(one))
                     else:
-                        print(one[0])
+                        console.log(one[0])
                 else:
-                    print(one)
+                    console.log(one)
