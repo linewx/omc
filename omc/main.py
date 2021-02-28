@@ -7,7 +7,7 @@ import traceback
 
 import pkg_resources
 
-from omc.core import built_in_resources
+from omc.core import built_in_resources, console
 from omc.core.decorator import filecache
 
 from omc.config import settings

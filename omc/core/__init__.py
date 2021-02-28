@@ -1,12 +1,12 @@
 import functools
-import os
 
-from omc.core.console import Console
+from omc.core.terminal import console
 from omc.core.resource import Resource
 
-__all__ = ['Resource']
+__all__ = ['Resource', 'console']
 
 built_in_resources = ['config', 'completion']
+
 
 def simple_completion(prompts=None):
     def simple_completion_decorator(func):
@@ -22,5 +22,4 @@ def simple_completion(prompts=None):
 
     return simple_completion_decorator
 
-console = Console()
 

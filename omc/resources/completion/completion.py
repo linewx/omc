@@ -5,6 +5,7 @@ import pkgutil
 import pkg_resources
 
 from omc.common import CmdTaskMixin
+from omc.common.common_completion import completion_cache, CompletionContent
 from omc.config import settings
 from omc.core import Resource, built_in_resources, console
 from omc.core.decorator import filecache
@@ -15,7 +16,7 @@ class Completion(Resource, CmdTaskMixin):
     def _description(self):
         return 'for resource completion'
 
-    @filecache(duration=-1, file=os.path.join(settings.OMC_COMPLETION_CACHE_DIR, 'completion'))
+    @completion_cache(duration=-1, file=os.path.join(settings.OMC_COMPLETION_CACHE_DIR, 'completion'))
     def _get_resource_completion(self):
         results = []
 
@@ -37,9 +38,9 @@ class Completion(Resource, CmdTaskMixin):
 
         # }
 
-        return "\n".join(results)
+        return CompletionContent(results)
 
     def _run(self):
         if '--refresh' in self.context['all']:
             self._clean_completin_cache()
-        console.log(self._get_resource_completion())
+        console.log(self._get_resource_completion().get_raw_content())

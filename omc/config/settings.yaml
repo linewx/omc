@@ -5,6 +5,7 @@ default:
   bin_dir: "@format {this.OMC_HOME}/bin"
   resource_config_dir: "@format {this.CONFIG_DIR}/resources"
   omc_completion_cache_dir: "@format {this.CACHE_DIR}/completion"
+  competion_timeout: 5
   db:
     drivername: sqlite
     database: "@format {env[OMC_HOME]}/omc.db"

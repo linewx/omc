@@ -3,7 +3,9 @@
 import os
 
 import pkg_resources
-from omc.core import console
+from omc.common.common_completion import CompletionContent, completion_cache
+
+from . import console
 
 from omc.config import settings
 
@@ -239,14 +241,14 @@ class Resource:
         return cache_file
         # return '/tmp/file.txt'
 
-    @filecache(duration=60 * 30, file=_get_cache_file_name)
+    @completion_cache(duration=60 * 30, file=_get_cache_file_name)
     def _completion(self, short_mode=False):
         public_methods = self._get_public_method_completion()
         sub_modules = self._get_sub_modules()
         all_comp = []
         all_comp.extend(self._get_completion(public_methods, short_mode))
         all_comp.extend(self._get_completion(sub_modules, short_mode))
-        return "\n".join(all_comp)
+        return CompletionContent(all_comp)
 
     def _help(self):
         raw_command = self.context['all']
@@ -291,7 +293,7 @@ class Resource:
             self._clean_completin_cache()
         # list candidates for completions in zsh style (a:"description for a" b:"description for b")
         try:
-            console.log(self._completion())
+            console.log(CompletionContent(self._completion()).get_output())
         except Exception as inst:
             # keep silent in completion mode
             return
