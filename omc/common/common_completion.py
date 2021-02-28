@@ -6,8 +6,9 @@ import traceback
 from omc.utils.file_utils import make_directory
 from collections.abc import Callable
 
+
 class CompletionContent:
-    def __init__(self, content, valid=None):
+    def __init__(self, content='', valid=None):
         if isinstance(content, bytes):
             self.content = content.decode('UTF-8').splitlines()
         elif isinstance(content, str):
@@ -17,12 +18,13 @@ class CompletionContent:
         elif isinstance(content, CompletionContent):
             self.content = content.get_content()
 
+        self.valid = True
         if valid is not None:
             self.valid = valid
         else:
             if isinstance(content, CompletionContent):
                 # clone from content
-                self.valid = self.content.is_valid()
+                self.valid = content.is_valid()
 
     def get_raw_content(self):
         return '\n'.join(self.content)
@@ -33,18 +35,22 @@ class CompletionContent:
     def add_content(self, content):
         if isinstance(content, CompletionContent):
             self.content.extend(content.get_content())
+            self.valid = content.is_valid() and self.valid
         else:
             self.add_content(CompletionContent(content))
 
-    def get_output(self):
+    def get_output(self, force=True):
+        if force:
+            return self.get_raw_content()
+
         if not self.valid:
             return 'no content'
         else:
             return self.get_raw_content()
 
-
     def is_valid(self):
         return self.valid
+
 
 def completion_cache(duration=None, file: (str, Callable) = '/tmp/cache.txt'):
     def _is_class_method(func):
@@ -58,6 +64,14 @@ def completion_cache(duration=None, file: (str, Callable) = '/tmp/cache.txt'):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             from datetime import datetime
+            if callable(duration):
+                if _is_class_method(duration):
+                    cache_duration = duration(args[0])
+                else:
+                    cache_duration = duration()
+            else:
+                cache_duration = duration
+
             if callable(file):
                 if _is_class_method(file):
                     cache_file = file(args[0])
@@ -71,13 +85,13 @@ def completion_cache(duration=None, file: (str, Callable) = '/tmp/cache.txt'):
             if not os.path.exists(cache_file):
                 cache_is_valid = False
             else:
-                if duration is None or duration == -1:
+                if cache_duration is None or cache_duration == -1:
                     cache_is_valid = True
                 else:
                     # duration and file all exists
                     os.path.getctime(cache_file)
                     the_duration = datetime.now().timestamp() - os.path.getctime(cache_file)
-                    if the_duration > duration:
+                    if the_duration > cache_duration:
                         cache_is_valid = False
                     else:
                         cache_is_valid = True
@@ -97,12 +111,16 @@ def completion_cache(duration=None, file: (str, Callable) = '/tmp/cache.txt'):
                     if not isinstance(result, CompletionContent):
                         return CompletionContent('', valid=False)
 
+                    if not result.is_valid():
+                        # don't cache
+                        return result
+
                     with open(cache_file, 'w') as f:
                         f.write(result.get_raw_content())
 
                     duration_file_name = os.path.join(os.path.dirname(cache_file), 'duration')
                     with open(duration_file_name, 'w') as f:
-                        f.write("-1" if duration is None else str(duration))
+                        f.write("-1" if cache_duration is None else str(cache_duration))
 
                     return result
                 except Exception as r:

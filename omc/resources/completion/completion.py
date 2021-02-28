@@ -17,7 +17,7 @@ class Completion(Resource, CmdTaskMixin):
         return 'for resource completion'
 
     @completion_cache(duration=-1, file=os.path.join(settings.OMC_COMPLETION_CACHE_DIR, 'completion'))
-    def _get_resource_completion(self):
+    def _get_resource_type_completion(self):
         results = []
 
         # for built-in resources
@@ -43,4 +43,4 @@ class Completion(Resource, CmdTaskMixin):
     def _run(self):
         if '--refresh' in self.context['all']:
             self._clean_completin_cache()
-        console.log(self._get_resource_completion().get_raw_content())
+        console.log(self._get_resource_type_completion().get_raw_content())

@@ -241,14 +241,40 @@ class Resource:
         return cache_file
         # return '/tmp/file.txt'
 
-    @completion_cache(duration=60 * 30, file=_get_cache_file_name)
+    def _resource_completion(self):
+        return CompletionContent()
+
+    def _get_resource_cache_duration(self):
+        # for resource cache duration
+        return 60 * 30
+
+    def _get_default_cache_duration(self):
+        # for default cache duration, which is more stable.
+        return 24 * 60 * 60
+
+    def _get_cache_duration(self):
+        if not self._have_resource_value():
+            # resource completion
+            return self._get_resource_cache_duration()
+        else:
+            # default resource completion
+            return self._get_default_cache_duration()
+
+    @completion_cache(duration=_get_cache_duration, file=_get_cache_file_name)
     def _completion(self, short_mode=False):
         public_methods = self._get_public_method_completion()
         sub_modules = self._get_sub_modules()
         all_comp = []
         all_comp.extend(self._get_completion(public_methods, short_mode))
         all_comp.extend(self._get_completion(sub_modules, short_mode))
-        return CompletionContent(all_comp)
+
+        completions = CompletionContent(all_comp)
+
+        if not self._have_resource_value():
+            resource_result = self._resource_completion()
+            completions.add_content(CompletionContent(resource_result))
+
+        return completions
 
     def _help(self):
         raw_command = self.context['all']
