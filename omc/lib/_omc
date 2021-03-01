@@ -23,7 +23,7 @@ __omc_commands() {
         omc_comp=~/.omc/bin/omc-completion.sh
     fi
     subcmds=(${(f)"$(_call_program commands $omc_comp completion 2>&1)"})
-    _describe 'command' subcmds
+    _describe -V 'command' subcmds
 }
 
 __omc_sub_commands() {
@@ -34,7 +34,7 @@ __omc_sub_commands() {
     local -a subcmds
     current_value=${(j: :)words[1, $CURRENT-1]}
     subcmds=(${(f)"$(_call_program commands $omc_comp $current_value completion 2>&1)"})
-    _describe 'command' subcmds
+    _describe -V 'command' subcmds
 }
 
 

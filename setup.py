@@ -5,7 +5,7 @@ install_requires = [
     'pyfiglet>=0.8.post1',
     'Click>=7.0',
     'psutil>=5.5',
-    'ruamel.yaml>=0.16.12',
+    'ruamel.yaml>=0.15.87',
     'prettytable>=0.7.2'
 ]
 

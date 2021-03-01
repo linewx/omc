@@ -8,7 +8,7 @@ class Formatter:
             widths = [0] * columns
             for one_completion in completions:
                 for index in range(len(one_completion)):
-                    current_width = len(one_completion[index])
+                    current_width = len(str(one_completion[index]))
                     if current_width > widths[index]:
                         widths[index] = current_width
             return widths
@@ -18,20 +18,26 @@ class Formatter:
 
         max_widths = Formatter.calculate_widths(completions)
         results = []
+        index = 0
         for one in completions:
-            results.append(Formatter.format_completion(one, max_widths, max_width=max_width, space=space))
+            index = index + 1
+            results.append(Formatter.format_completion(one, max_widths, max_width=max_width, space=space, line_number=index))
 
         return results
 
     @staticmethod
-    def format_completion(completion, widths=[], max_width=10, space=2):
+    def format_completion(completion, widths=[], max_width=10, space=2, line_number=None):
 
         result = ''
         for i in range(0, len(completion)):
-            the_value = completion[i]
+            the_value = str(completion[i])
 
             width = widths[i] if i < len(widths) else max_width
             if i != 0:
+                if i == 1:
+                    if line_number is not None:
+                        result = result + " " + str(line_number).ljust(5)
+
                 result = result + the_value.ljust(width + space)
             if i == 0:
                 result = result + the_value + ':'
