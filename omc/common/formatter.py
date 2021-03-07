@@ -14,14 +14,14 @@ class Formatter:
             return widths
 
     @staticmethod
-    def format_completions(completions, max_width=10, space=2):
+    def format_completions(completions, max_width=10, space=2, enable_line=True, line_start=0):
 
         max_widths = Formatter.calculate_widths(completions)
         results = []
-        index = 0
+        index = line_start
         for one in completions:
             index = index + 1
-            results.append(Formatter.format_completion(one, max_widths, max_width=max_width, space=space, line_number=index))
+            results.append(Formatter.format_completion(one, max_widths, max_width=max_width, space=space, line_number=(index if enable_line else None)))
 
         return results
 

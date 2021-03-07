@@ -68,3 +68,24 @@ def filecache(duration=None, file: (str, Callable) = '/tmp/cache.txt'):
     return completion_cache_decorator
 
 
+def resource_instance_action(f):
+    if isinstance(f, property):
+        f.fget.is_resource_instance_action = True
+    else:
+        f.is_resource_instance_action = True
+    return f
+
+
+def resource_class_action(f):
+    if isinstance(f, property):
+        f.fget.is_resource_list_action = True
+    else:
+        f.is_resource_list_action = True
+    return f
+
+def private_action(f):
+    if isinstance(f, property):
+        f.fget.is_private = True
+    else:
+        f.is_resource_private = True
+    return f

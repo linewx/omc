@@ -3,6 +3,8 @@
 import os
 
 import pkg_resources
+from omc.common.formatter import Formatter
+
 from omc.common.common_completion import CompletionContent, completion_cache
 
 from . import console
@@ -112,7 +114,17 @@ class Resource:
                     self.context['action_params'] = raw_command[self.context['index'] + 1:]
                     if dry_run:
                         return action
-                    return action()
+
+                    if 'completion' in self._get_action_params():
+                        # completion action
+                        if hasattr(action, 'completion'):
+                            # has completion decorator
+                            return action()
+                        else:
+                            return ''
+
+                    else:
+                        return action()
                 else:
                     #
                     # if self.has_params is None:
@@ -165,6 +177,12 @@ class Resource:
     def _get_public_methods(self):
         return list(filter(lambda x: callable(getattr(self, x)) and not x.startswith('_'), dir(self)))
 
+    def _get_instance_methods(self):
+        return list(filter(lambda x: callable(getattr(self, x)) and not x.startswith('_') and x != 'run_cmd' and not hasattr(getattr(self, x), 'is_resource_list_action') is True, dir(self)))
+
+    def _get_list_methods(self):
+        return list(filter(lambda x: callable(getattr(self, x)) and not x.startswith('_') and x != 'run_cmd' and not hasattr(getattr(self, x), 'is_resource_instance_action') is True, dir(self)))
+
     def _get_submodules(self):
         # for example, module name is 'omc.resources.jmx.jmx', submodules should be other folder within omc.resources.jmx folder
         # module_path = self.__module__.split('.')
@@ -206,8 +224,22 @@ class Resource:
         return [(one, getattr(self, one).__doc__ if getattr(self, one).__doc__ is not None else one) for one in
                 public_methods]
 
+    def _get_method_with_description(self, methods):
+        return [(one, getattr(self, one).__doc__ if getattr(self, one).__doc__ is not None else one) for one in methods]
+
+    def _get_module_with_description(self, modules):
+        results = []
+        for one in modules:
+            mod_path = (str(self.__class__.__module__)).split('.')[:-1]
+            mod_path.extend([one, one])
+            mod = __import__('.'.join(mod_path), fromlist=[one.capitalize()])
+            clazz = getattr(mod, one.capitalize())
+            results.append((one, 'resource %s' % one if clazz.__doc__ is None else clazz.__doc__))
+
+        return results
+
     def _get_sub_modules(self):
-        return [(one_module, 'module ' + one_module) for one_module in self._get_submodules()]
+        return [one_module for one_module in self._get_submodules()]
 
     ################################################################
     #################### protected method ##########################
@@ -262,17 +294,37 @@ class Resource:
 
     @completion_cache(duration=_get_cache_duration, file=_get_cache_file_name)
     def _completion(self, short_mode=False):
-        public_methods = self._get_public_method_completion()
-        sub_modules = self._get_sub_modules()
-        all_comp = []
-        all_comp.extend(self._get_completion(public_methods, short_mode))
-        all_comp.extend(self._get_completion(sub_modules, short_mode))
+        completions = CompletionContent()
+        if self._have_resource_value():
+            # for instance methods
+            instance_methods = self._get_instance_methods()
+            instance_methods_with_doc = self._get_method_with_description(instance_methods)
+            completions.add_content(Formatter.format_completions(instance_methods_with_doc, enable_line=False))
 
-        completions = CompletionContent(all_comp)
+            modules = self._get_sub_modules()
+            modules_with_doc = self._get_module_with_description(modules)
+            completions.add_content(Formatter.format_completions(modules_with_doc, enable_line=False))
 
-        if not self._have_resource_value():
+        else:
+            # for list method
+            list_methods = self._get_list_methods()
+            list_methods_with_doc = self._get_method_with_description(list_methods)
+            completions.add_content(Formatter.format_completions(list_methods_with_doc, enable_line=False))
             resource_result = self._resource_completion()
             completions.add_content(CompletionContent(resource_result))
+        # if self._have_resource_value():
+        # public_methods = self._get_public_method_completion()
+        # sub_modules = self._get_sub_modules()
+        # all_comp = []
+        # all_comp.extend(self._get_completion(public_methods, short_mode))
+        # all_comp.extend(self._get_completion(sub_modules, short_mode))
+        #
+        # completions = CompletionContent(all_comp)
+        #
+        #
+        # if not self._have_resource_value():
+        #     resource_result = self._resource_completion()
+        #     completions.add_content(CompletionContent(resource_result))
 
         return completions
 

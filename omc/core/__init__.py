@@ -1,3 +1,4 @@
+import argparse
 import functools
 
 from omc.core.terminal import console
@@ -10,6 +11,8 @@ built_in_resources = ['config', 'completion']
 
 def simple_completion(prompts=None):
     def simple_completion_decorator(func):
+        func.completion = True
+
         @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
             if 'completion' in self._get_action_params():
@@ -21,5 +24,6 @@ def simple_completion(prompts=None):
         return wrapper
 
     return simple_completion_decorator
+
 
 

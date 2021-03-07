@@ -1,7 +1,10 @@
+import argparse
 import functools
 import os
 import inspect
 import traceback
+
+from omc.common.formatter import Formatter
 
 from omc.utils.file_utils import make_directory
 from collections.abc import Callable
@@ -129,3 +132,30 @@ def completion_cache(duration=None, file: (str, Callable) = '/tmp/cache.txt'):
         return wrapper
 
     return completion_cache_decorator
+
+
+def action_arguments(arguments=[]):
+    def simple_completion_decorator(func):
+        func.completion = True
+
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            completions = []
+            parser = argparse.ArgumentParser()
+            for one in arguments:
+                args, kwargs = one
+                parser.add_argument(*args, **kwargs)
+                for one_args in args:
+                    description = kwargs.get('help') if kwargs is not None else one_args
+                    completions.append((one_args, description))
+
+            if 'completion' in self._get_action_params():
+                completion_result = CompletionContent(Formatter.format_completions(completions))
+                print(completion_result.get_raw_content())
+                return
+            else:
+                return func(self, parser, *args, **kwargs)
+
+        return wrapper
+
+    return simple_completion_decorator
