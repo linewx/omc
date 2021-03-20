@@ -1,5 +1,6 @@
 import argparse
 import functools
+import logging
 import os
 import inspect
 import traceback
@@ -9,6 +10,7 @@ from omc.common.formatter import Formatter
 from omc.utils.file_utils import make_directory
 from collections.abc import Callable
 
+logger = logging.getLogger(__name__)
 
 class CompletionContent:
     def __init__(self, content='', valid=None):
@@ -126,7 +128,8 @@ def completion_cache(duration=None, file: (str, Callable) = '/tmp/cache.txt'):
                         f.write("-1" if cache_duration is None else str(cache_duration))
 
                     return result
-                except Exception as r:
+                except Exception as e:
+                    logger.error(e, exc_info=True)
                     return CompletionContent('', valid=False)
 
         return wrapper

@@ -18,6 +18,7 @@ import textwrap
 
 from omc.core.decorator import filecache
 
+logger = logging.getLogger(__name__)
 
 class Resource:
     # todo@rain: to differentiate between the following methods:
@@ -221,11 +222,11 @@ class Resource:
 
     def _get_public_method_completion(self):
         public_methods = self._get_public_methods()
-        return [(one, getattr(self, one).__doc__ if getattr(self, one).__doc__ is not None else one) for one in
+        return [(one, self._get_short_doc(getattr(self, one).__doc__) if getattr(self, one).__doc__ else one) for one in
                 public_methods]
 
     def _get_method_with_description(self, methods):
-        return [(one, getattr(self, one).__doc__ if getattr(self, one).__doc__ is not None else one) for one in methods]
+        return [(one, self._get_short_doc(getattr(self, one).__doc__) if getattr(self, one).__doc__ else one) for one in methods]
 
     def _get_module_with_description(self, modules):
         results = []
@@ -234,7 +235,7 @@ class Resource:
             mod_path.extend([one, one])
             mod = __import__('.'.join(mod_path), fromlist=[one.capitalize()])
             clazz = getattr(mod, one.capitalize())
-            results.append((one, 'resource %s' % one if clazz.__doc__ is None else clazz.__doc__))
+            results.append((one, 'resource %s' % one if not clazz.__doc__ else self._get_short_doc(clazz.__doc__)))
 
         return results
 
@@ -372,12 +373,22 @@ class Resource:
         # list candidates for completions in zsh style (a:"description for a" b:"description for b")
         try:
             console.log(CompletionContent(self._completion()).get_output())
-        except Exception as inst:
+        except Exception as e:
             # keep silent in completion mode
+            logger.error(e, exc_info=True)
             return
 
     def help(self):
+        """
+        display function usage
+        """
         self._help()
+
+    def _get_short_doc(self, doc):
+        if doc is None:
+            return ""
+        else:
+            return doc.strip().split('\n')[0].strip()
 
 
 if __name__ == '__main__':

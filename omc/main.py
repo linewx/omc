@@ -6,6 +6,7 @@ import sys
 import traceback
 
 import pkg_resources
+from omc.utils.file_utils import make_directory
 
 from omc.core import built_in_resources, console
 from omc.core.decorator import filecache
@@ -30,10 +31,16 @@ def usage():
     console.log('''omc resource action params ''')
 
 
-def main():
+def init_logger():
     FORMAT = "[%(filename)s:%(lineno)s - %(funcName)s ] %(message)s"
-    logging.basicConfig(format=FORMAT, level=logging.INFO)
-    logger = logging.getLogger(__name__)
+    log_dir = settings.LOG_DIR
+    make_directory(log_dir)
+    logging.basicConfig(filename=os.path.join(log_dir, 'omc.log'), format=FORMAT, level=logging.INFO)
+
+
+def main():
+    init_logger()
+    # logger = logging.getLogger('omc')
     resource_type = sys.argv[1]
 
     try:
@@ -41,7 +48,8 @@ def main():
             mod = __import__(".".join(['omc', 'resources', resource_type, resource_type]),
                              fromlist=[resource_type.capitalize()])
         else:
-            mod = __import__(".".join(['omc_' + resource_type, resource_type, resource_type]), fromlist=[resource_type.capitalize()])
+            mod = __import__(".".join(['omc_' + resource_type, resource_type, resource_type]),
+                             fromlist=[resource_type.capitalize()])
         clazz = getattr(mod, resource_type.capitalize())
         context = {
             'all': sys.argv,

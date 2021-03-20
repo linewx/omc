@@ -3,6 +3,7 @@ default:
   config_dir: "@format {this.OMC_HOME}/config"
   cache_dir: "@format {this.OMC_HOME}/cache"
   bin_dir: "@format {this.OMC_HOME}/bin"
+  log_dir: "@format {this.OMC_HOME}/logs"
   resource_config_dir: "@format {this.CONFIG_DIR}/resources"
   omc_completion_cache_dir: "@format {this.CACHE_DIR}/completion"
   competion_timeout: 5

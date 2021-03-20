@@ -83,6 +83,7 @@ def resource_class_action(f):
         f.is_resource_list_action = True
     return f
 
+
 def private_action(f):
     if isinstance(f, property):
         f.fget.is_private = True
