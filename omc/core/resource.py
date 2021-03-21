@@ -5,7 +5,7 @@ import os
 import pkg_resources
 from omc.common.formatter import Formatter
 
-from omc.common.common_completion import CompletionContent, completion_cache
+from omc.common.common_completion import CompletionContent, completion_cache, action_arguments
 
 from . import console
 
@@ -367,8 +367,13 @@ class Resource:
         if os.path.exists(duration_file):
             os.remove(duration_file)
 
-    def completion(self):
-        if '--refresh' in self._get_action_params():
+    @action_arguments([(['--refresh'], {'help': 'clean completion cache before completion generation', 'action': 'store_true'})])
+    def completion(self, parser):
+        """
+        used for zsh completion
+        """
+        args = parser.parse_args(self._get_action_params())
+        if args.refresh:
             self._clean_completin_cache()
         # list candidates for completions in zsh style (a:"description for a" b:"description for b")
         try:

@@ -21,14 +21,14 @@ class CmdTaskMixin:
             if block:
                 if capture_output:
                     # capture output
-                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, env=the_env, capture_output=True)
+                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, env=the_env, capture_output=True, *args, **kwargs)
                     return result
                 else:
                     # to output
-                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, env=the_env, capture_output=False)
+                    result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, env=the_env, capture_output=False, *args, **kwargs)
                     return result
             else:
-                result = subprocess.Popen(cmd, cwd=cwd, shell=True, env=the_env)
+                result = subprocess.Popen(cmd, cwd=cwd, shell=True, env=the_env, *args, **kwargs)
                 return result
 
         except Exception as e:

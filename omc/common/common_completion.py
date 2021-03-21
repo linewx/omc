@@ -142,7 +142,7 @@ def action_arguments(arguments=[]):
         func.completion = True
 
         @functools.wraps(func)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self, *func_args, **func_kwargs):
             completions = []
             parser = argparse.ArgumentParser()
             for one in arguments:
@@ -157,7 +157,7 @@ def action_arguments(arguments=[]):
                 print(completion_result.get_raw_content())
                 return
             else:
-                return func(self, parser, *args, **kwargs)
+                return func(self, parser, *func_args, **func_kwargs)
 
         return wrapper
 
