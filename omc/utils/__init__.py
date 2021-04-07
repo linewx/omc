@@ -1,5 +1,11 @@
+import os
+import subprocess
+
 import pkg_resources
 from urllib.parse import urlparse
+
+from omc.core import console
+
 
 class UrlUtils:
     def __init__(self, url):
@@ -64,3 +70,33 @@ def prompt(question, required=False, isBool=False, default=None):
             else:
                 return result
 
+
+def run_cmd(cmd, cwd=None, env=None, block=True, capture_output=False, verbose=True, *args, **kwargs):
+    the_env = {}
+    the_env.update(os.environ)
+    if env is not None:
+        the_env.update(env)
+
+    try:
+        cwd = cwd if cwd is None else cwd.replace("\\", "/")
+
+        if verbose:
+            console.log("cmd: %s, cwd: %s" % (cmd, cwd))
+
+        if block:
+            if capture_output:
+                # capture output
+                result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, env=the_env, capture_output=True, *args,
+                                        **kwargs)
+                return result
+            else:
+                # to output
+                result = subprocess.run(cmd, cwd=cwd, shell=True, check=True, env=the_env, capture_output=False, *args,
+                                        **kwargs)
+                return result
+        else:
+            result = subprocess.Popen(cmd, cwd=cwd, shell=True, env=the_env, *args, **kwargs)
+            return result
+
+    except Exception as e:
+        raise e

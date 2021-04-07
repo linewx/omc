@@ -5,14 +5,14 @@ install_requires = [
     'pyfiglet>=0.8.post1',
     'Click>=7.0',
     'psutil>=5.5',
-    'ruamel.yaml>=0.15.87',
+    'pyyaml>=5',
     'prettytable>=0.7.2'
 ]
 
 
 setup(
     name='omc',
-    version="0.2.3",
+    version="0.2.4",
     description='oh my command',
     license='MIT',
     author='Lu Ganlin',
